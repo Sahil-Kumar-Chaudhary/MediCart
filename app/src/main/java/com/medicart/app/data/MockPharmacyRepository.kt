@@ -187,6 +187,22 @@ class MockPharmacyRepository {
     )
 
     // Reactive State
+    private val _isAuthenticated = MutableStateFlow(false)
+    val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
+
+    fun verifyOtp(mobileNumber: String, otp: String): Boolean {
+        // Requires 6-digit code
+        if (otp.length == 6 && otp.all { it.isDigit() }) {
+            _isAuthenticated.value = true
+            return true
+        }
+        return false
+    }
+
+    fun logout() {
+        _isAuthenticated.value = false
+    }
+
     private val _cartItems = MutableStateFlow<List<CartItem>>(
         listOf(
             CartItem(initialProducts[0], 2), // Paracare 650

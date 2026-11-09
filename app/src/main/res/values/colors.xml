@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_emerald">#087E6B</color>
+    <color name="primary_dark">#075B4F</color>
+    <color name="secondary_mint">#DDF1EA</color>
+    <color name="app_background">#F7F9F7</color>
+    <color name="surface_white">#FFFFFF</color>
+    <color name="ic_launcher_background">#087E6B</color>
+</resources>

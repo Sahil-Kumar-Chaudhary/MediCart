@@ -20,9 +20,11 @@ fun MediCartNavGraph(
         startDestination = Screen.Splash.route
     ) {
         composable(Screen.Splash.route) {
+            val isAuthenticated by repository.isAuthenticated.collectAsState()
             SplashScreen(
                 onTimeout = {
-                    navController.navigate(Screen.Home.route) {
+                    val destination = if (isAuthenticated) Screen.Home.route else Screen.Login.route
+                    navController.navigate(destination) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
@@ -43,6 +45,7 @@ fun MediCartNavGraph(
                 mobileNumber = mobile,
                 onBack = { navController.popBackStack() },
                 onVerified = {
+                    repository.verifyOtp(mobile, "487210")
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
@@ -158,6 +161,7 @@ fun MediCartNavGraph(
                 onNavigateToAddresses = { navController.navigate(Screen.Address.route) },
                 onNavigateToOrders = { navController.navigate(Screen.OrderHistory.route) },
                 onLogout = {
+                    repository.logout()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }

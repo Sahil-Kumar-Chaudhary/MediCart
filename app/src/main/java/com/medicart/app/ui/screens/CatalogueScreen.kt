@@ -251,7 +251,7 @@ fun CatalogueScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row(verticalAlignment = Alignment.Baseline) {
+                                    Row(verticalAlignment = Alignment.Bottom) {
                                         Text(
                                             text = "₹${product.priceInr.toInt()}",
                                             style = MaterialTheme.typography.titleMedium,

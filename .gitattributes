@@ -1,0 +1,2 @@
+# Exclude interactive UI prototype from GitHub language statistics
+ui-artboards/** linguist-detectable=false

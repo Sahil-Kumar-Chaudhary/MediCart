@@ -151,7 +151,7 @@ fun ProductDetailScreen(
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Row(
-                            verticalAlignment = Alignment.Baseline,
+                            verticalAlignment = Alignment.Bottom,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
