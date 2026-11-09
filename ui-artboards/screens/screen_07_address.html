@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=393, height=852, initial-scale=1.0">
+  <title>MediCart - Delivery Address</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 393px;
+      height: 852px;
+      overflow: hidden;
+      background-color: #F7F9F7;
+      color: #172B27;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .mobile-screen {
+      width: 393px;
+      height: 852px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: #F7F9F7;
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-screen">
+    
+        <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+          <span>9:41</span><div class="w-3 h-3 bg-[#172B27] rounded-full"></div><span>🔋 98%</span>
+        </div>
+
+        <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] flex items-center gap-3">
+          <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-[#172B27]">←</button>
+          <span class="text-sm font-bold text-[#172B27]">Add Delivery Address</span>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3.5">
+          <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs space-y-2.5">
+            <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider block">Recipient Information</span>
+            <div>
+              <label class="block text-[11px] font-semibold text-[#172B27] mb-1">Full Name</label>
+              <input type="text" value="Sahil Kumar" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-[#172B27] mb-1">Mobile (+91)</label>
+              <input type="text" value="+91 98765 43210" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+            </div>
+          </div>
+
+          <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs space-y-2.5">
+            <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider block">Address Details</span>
+            <div>
+              <label class="block text-[11px] font-semibold text-[#172B27] mb-1">Flat / House No. / Building</label>
+              <input type="text" value="Flat 402, Block B, Shanti Vihar" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-[#172B27] mb-1">Street / Locality</label>
+              <input type="text" value="12th Main Road, HAL 2nd Stage" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-semibold text-[#172B27] mb-1">City</label>
+                <input type="text" value="Bengaluru" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-[#172B27] mb-1">State</label>
+                <input type="text" value="Karnataka" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+              </div>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-[#172B27] mb-1">6-Digit PIN Code</label>
+              <div class="relative">
+                <input type="text" value="560038" class="w-full h-9 px-3 rounded-lg bg-white border-2 border-[#16865B] text-xs font-bold text-[#172B27]">
+                <span class="absolute right-2.5 top-2 text-[10px] font-bold text-[#16865B]">✓ Deliverable Area</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] shadow-xs">
+            <label class="block text-[10px] font-bold text-[#71817B] uppercase tracking-wider mb-2">Save Address As</label>
+            <div class="flex gap-2">
+              <button class="px-3 py-1.5 rounded-lg bg-[#087E6B] text-white text-xs font-bold shadow-xs">🏠 Home</button>
+              <button class="px-3 py-1.5 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-[#172B27] text-xs font-medium">🏢 Work</button>
+              <button class="px-3 py-1.5 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-[#172B27] text-xs font-medium">📍 Other</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border-t border-[#E5ECE8] p-3">
+          <button class="w-full h-11 bg-[#087E6B] text-white font-bold text-xs rounded-xl shadow-md shadow-[#087E6B]/20">
+            Save & Deliver Here
+          </button>
+        </div>
+
+        <div class="w-18 h-1 bg-[#172B27]/30 rounded-full mx-auto mb-2"></div>
+        
+  </div>
+</body>
+</html>

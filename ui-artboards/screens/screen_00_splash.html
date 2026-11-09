@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=393, height=852, initial-scale=1.0">
+  <title>MediCart - Splash Screen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 393px;
+      height: 852px;
+      overflow: hidden;
+      background-color: #F7F9F7;
+      color: #172B27;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .mobile-screen {
+      width: 393px;
+      height: 852px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: #F7F9F7;
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-screen">
+    
+        <!-- Status Bar -->
+        <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+          <span>9:41</span>
+          <div class="w-3 h-3 bg-[#172B27] rounded-full"></div>
+          <div class="flex items-center gap-1.5 text-xs">
+            <span>5G</span>
+            <span>📶</span>
+            <span>🔋 98%</span>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col items-center justify-between p-8 text-center">
+          <div></div>
+          
+          <!-- Center Logo & Name -->
+          <div class="flex flex-col items-center">
+            <div class="relative mb-6">
+              <div class="absolute -inset-4 bg-[#DDF1EA] rounded-full blur-xl opacity-80"></div>
+              <div class="relative w-28 h-28 rounded-3xl bg-gradient-to-br from-[#087E6B] to-[#075B4F] flex items-center justify-center shadow-xl shadow-[#087E6B]/30 border border-[#087E6B]/30">
+                <svg class="w-16 h-16 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                  <path d="M3 6h18"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                  <path d="M12 13v6" stroke="#DDF1EA" stroke-width="2.5"/>
+                  <path d="M9 16h6" stroke="#DDF1EA" stroke-width="2.5"/>
+                </svg>
+              </div>
+            </div>
+
+            <h1 class="text-3xl font-extrabold text-[#172B27] tracking-tight">Medi<span class="text-[#087E6B]">Cart</span></h1>
+            <p class="text-sm font-semibold text-[#71817B] mt-2 tracking-wide uppercase text-[11px]">Healthcare, Made Convenient.</p>
+            <div class="mt-4 px-3 py-1 rounded-full bg-[#DDF1EA] text-[#087E6B] text-[11px] font-bold">
+              🇮🇳 India's Trusted E-Pharmacy
+            </div>
+          </div>
+
+          <!-- Bottom Indicator & Launcher Spec -->
+          <div class="w-full flex flex-col items-center gap-3">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-[#087E6B] animate-ping"></div>
+              <span class="text-xs text-[#71817B]">Securing connection...</span>
+            </div>
+            <div class="p-3 rounded-xl bg-white border border-[#E5ECE8] w-full text-left flex items-center gap-3 shadow-sm">
+              <div class="w-8 h-8 rounded-lg bg-[#087E6B] flex items-center justify-center text-white shrink-0">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 6v12M6 12h12"/></svg>
+              </div>
+              <div>
+                <div class="text-[11px] font-bold text-[#172B27]">Reusable Launcher Icon</div>
+                <div class="text-[10px] text-[#71817B]">Adaptive vector icon for Android home screen</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-18 h-1 bg-[#172B27]/30 rounded-full mx-auto mb-2"></div>
+        
+  </div>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=393, height=852, initial-scale=1.0">
+  <title>MediCart - Home Screen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 393px;
+      height: 852px;
+      overflow: hidden;
+      background-color: #F7F9F7;
+      color: #172B27;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .mobile-screen {
+      width: 393px;
+      height: 852px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: #F7F9F7;
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-screen">
+    
+        <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+          <span>9:41</span><div class="w-3 h-3 bg-[#172B27] rounded-full"></div><span>🔋 98%</span>
+        </div>
+
+        <div class="bg-white px-4 pt-2 pb-3 border-b border-[#E5ECE8]">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center font-bold">📍</div>
+              <div>
+                <div class="text-[10px] uppercase font-bold text-[#71817B] tracking-wider">Deliver To</div>
+                <div class="text-xs font-bold text-[#172B27] flex items-center gap-1">
+                  <span>Indiranagar, Bengaluru - 560038</span>
+                  <span class="text-[#087E6B]">▾</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-[#F7F9F7] border border-[#E5ECE8] flex items-center justify-center text-xs relative">
+                🔔
+                <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D64B4B]"></span>
+              </div>
+              <div class="w-8 h-8 rounded-full bg-[#087E6B] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                SK
+              </div>
+            </div>
+          </div>
+
+          <div class="relative">
+            <input type="text" readonly placeholder="Search medicines, health essentials..." class="w-full h-11 pl-10 pr-10 rounded-xl bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+            <span class="absolute left-3.5 top-3.5 text-xs text-[#71817B]">🔍</span>
+            <span class="absolute right-3.5 top-3.5 text-xs text-[#087E6B]">🎙️</span>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+          <div class="p-4 rounded-2xl bg-gradient-to-br from-[#087E6B] to-[#075B4F] text-white shadow-md shadow-[#087E6B]/15 relative overflow-hidden">
+            <div class="relative z-10 max-w-[210px]">
+              <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold tracking-wide uppercase">Monsoon Wellness</span>
+              <h3 class="text-base font-extrabold mt-1 leading-tight">Healthcare Essentials at Transparent Prices</h3>
+              <p class="text-[11px] text-white/80 mt-1">Verified formulations delivered safely to your home.</p>
+              <button class="mt-3 px-3 py-1.5 rounded-lg bg-white text-[#087E6B] font-bold text-[11px] shadow-sm">
+                Explore Catalogue →
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-[#172B27]">Shop by Category</h3>
+              <span class="text-xs font-bold text-[#087E6B]">View All (8)</span>
+            </div>
+            <div class="grid grid-cols-4 gap-2.5">
+              <div class="bg-white p-2.5 rounded-xl border border-[#E5ECE8] flex flex-col items-center text-center shadow-xs">
+                <div class="w-10 h-10 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center text-lg mb-1.5">💊</div>
+                <span class="text-[11px] font-bold text-[#172B27]">Pain Relief</span>
+                <span class="text-[9px] text-[#71817B]">42 items</span>
+              </div>
+              <div class="bg-white p-2.5 rounded-xl border border-[#E5ECE8] flex flex-col items-center text-center shadow-xs">
+                <div class="w-10 h-10 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center text-lg mb-1.5">🫁</div>
+                <span class="text-[11px] font-bold text-[#172B27]">Cough & Cold</span>
+                <span class="text-[9px] text-[#71817B]">38 items</span>
+              </div>
+              <div class="bg-white p-2.5 rounded-xl border border-[#E5ECE8] flex flex-col items-center text-center shadow-xs">
+                <div class="w-10 h-10 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center text-lg mb-1.5">🩺</div>
+                <span class="text-[11px] font-bold text-[#172B27]">First Aid</span>
+                <span class="text-[9px] text-[#71817B]">29 items</span>
+              </div>
+              <div class="bg-white p-2.5 rounded-xl border border-[#E5ECE8] flex flex-col items-center text-center shadow-xs">
+                <div class="w-10 h-10 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center text-lg mb-1.5">🛡️</div>
+                <span class="text-[11px] font-bold text-[#172B27]">Vitamins</span>
+                <span class="text-[9px] text-[#71817B]">54 items</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="text-sm font-bold text-[#172B27]">Featured Medicines</h3>
+                <p class="text-[10px] text-[#71817B]">Verified pharmacy items</p>
+              </div>
+              <span class="text-xs font-bold text-[#087E6B]">See More</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white rounded-xl border border-[#E5ECE8] p-3 flex flex-col justify-between shadow-xs">
+                <div>
+                  <div class="w-full h-24 rounded-lg bg-[#F7F9F7] flex items-center justify-center relative mb-2">
+                    <span class="text-3xl">💊</span>
+                    <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#DDF1EA] text-[#087E6B]">10% OFF</span>
+                  </div>
+                  <div class="text-[10px] font-bold text-[#16865B] mb-0.5">● In Stock</div>
+                  <h4 class="text-xs font-bold text-[#172B27] leading-snug">Paracare 650mg</h4>
+                  <p class="text-[10px] text-[#71817B]">Strip of 15 Tablets</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-[#E5ECE8] flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-extrabold text-[#172B27]">₹34.00</div>
+                    <div class="text-[9px] text-[#71817B] line-through">₹38.00</div>
+                  </div>
+                  <button class="px-2.5 py-1 bg-[#087E6B] text-white text-[11px] font-bold rounded-lg shadow-xs">+ Add</button>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl border border-[#E5ECE8] p-3 flex flex-col justify-between shadow-xs">
+                <div>
+                  <div class="w-full h-24 rounded-lg bg-[#F7F9F7] flex items-center justify-center relative mb-2">
+                    <span class="text-3xl">🌿</span>
+                    <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#DDF1EA] text-[#087E6B]">15% OFF</span>
+                  </div>
+                  <div class="text-[10px] font-bold text-[#16865B] mb-0.5">● In Stock</div>
+                  <h4 class="text-xs font-bold text-[#172B27] leading-snug">AyurTulsi Syrup</h4>
+                  <p class="text-[10px] text-[#71817B]">Bottle of 100 ml</p>
+                </div>
+                <div class="mt-3 pt-2 border-t border-[#E5ECE8] flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-extrabold text-[#172B27]">₹85.00</div>
+                    <div class="text-[9px] text-[#71817B] line-through">₹99.00</div>
+                  </div>
+                  <button class="px-2.5 py-1 bg-[#087E6B] text-white text-[11px] font-bold rounded-lg shadow-xs">+ Add</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-lg">🩺</div>
+              <div>
+                <div class="text-xs font-bold text-[#172B27]">OmniTherm Digital Thermometer</div>
+                <div class="text-[10px] text-[#71817B]">1 Unit • ₹199.00</div>
+              </div>
+            </div>
+            <button class="text-xs font-bold text-[#087E6B]">View</button>
+          </div>
+        </div>
+
+        <div class="bg-white border-t border-[#E5ECE8] px-4 py-2 flex justify-around items-center">
+          <div class="flex flex-col items-center text-[#087E6B]"><span class="text-sm">🏠</span><span class="text-[10px] font-bold mt-0.5">Home</span></div>
+          <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">📑</span><span class="text-[10px] font-medium mt-0.5">Catalogue</span></div>
+          <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">📦</span><span class="text-[10px] font-medium mt-0.5">Orders</span></div>
+          <div class="flex flex-col items-center text-[#71817B] relative">
+            <span class="text-sm">🛍️</span>
+            <span class="absolute -top-1 -right-2 bg-[#087E6B] text-white text-[9px] font-bold px-1 rounded-full">2</span>
+            <span class="text-[10px] font-medium mt-0.5">Cart</span>
+          </div>
+        </div>
+
+        <div class="w-18 h-1 bg-[#172B27]/30 rounded-full mx-auto mb-2"></div>
+        
+  </div>
+</body>
+</html>

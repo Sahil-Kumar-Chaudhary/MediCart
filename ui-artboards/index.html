@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediCart – Android UI Artboard System & Interactive Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              primary: '#087E6B',
+              dark: '#075B4F',
+              secondary: '#DDF1EA',
+              bg: '#F7F9F7',
+              surface: '#FFFFFF',
+              text: '#172B27',
+              muted: '#71817B',
+              border: '#E5ECE8',
+              success: '#16865B',
+              warning: '#E49A32',
+              error: '#D64B4B',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Android 393x852 Artboard Dimensions */
+    .artboard-frame {
+      width: 393px;
+      height: 852px;
+      min-width: 393px;
+      min-height: 852px;
+      max-width: 393px;
+      max-height: 852px;
+      background-color: #F7F9F7;
+      color: #172B27;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      position: relative;
+      overflow: hidden;
+      border-radius: 40px;
+      box-shadow: 0 25px 50px -12px rgba(8, 126, 107, 0.15), 0 0 0 1px rgba(229, 236, 232, 0.8), 0 12px 30px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Clean custom scrollbar for screens */
+    .artboard-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: #E5ECE8 transparent;
+    }
+    .artboard-content::-webkit-scrollbar {
+      width: 4px;
+    }
+    .artboard-content::-webkit-scrollbar-thumb {
+      background-color: #E5ECE8;
+      border-radius: 4px;
+    }
+
+    /* Skeleton shimmer animation */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-box {
+      background: linear-gradient(90deg, #E5ECE8 25%, #F0F4F2 50%, #E5ECE8 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    /* Subtle pulse animation for logo */
+    @keyframes gentlePulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.95; }
+    }
+    .pulse-logo {
+      animation: gentlePulse 3s ease-in-out infinite;
+    }
+
+    /* Device camera pill notch */
+    .camera-punch {
+      width: 12px;
+      height: 12px;
+      background-color: #172B27;
+      border-radius: 50%;
+      margin: 0 auto;
+    }
+
+    /* Android Gesture Bar */
+    .android-nav-pill {
+      width: 72px;
+      height: 4px;
+      background-color: #172B27;
+      border-radius: 9999px;
+      margin: 8px auto 6px auto;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+  <!-- Top Navigation & Controls Header -->
+  <header class="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#087E6B] flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-[#087E6B]/30">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/><path d="M12 14v4"/><path d="M10 16h4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold tracking-tight text-white">MediCart</h1>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-[#087E6B]/20 text-[#38d3b8] border border-[#087E6B]/40">Brand Redesign 2.0</span>
+            <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-slate-800 text-slate-300">Android 393 × 852 dp</span>
+          </div>
+          <p class="text-xs text-slate-400">Emerald Green + Warm White Design System • Indian E-Pharmacy Standard</p>
+        </div>
+      </div>
+
+      <!-- Mode Switcher Tabs -->
+      <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800">
+        <button id="tab-artboards" onclick="switchView('artboards')" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-[#087E6B] text-white shadow-sm">
+          📱 All 12 Artboards Grid
+        </button>
+        <button id="tab-states" onclick="switchView('states')" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+          ⚠️ Edge & Error States (11)
+        </button>
+        <button id="tab-interactive" onclick="switchView('interactive')" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+          ✨ Live Interactive Flow
+        </button>
+        <button id="tab-design-system" onclick="switchView('design-system')" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+          🎨 Design System & Compose Tokens
+        </button>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="flex items-center gap-3">
+        <button onclick="zoomOut()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold" title="Zoom Out">🔍 -</button>
+        <span id="zoom-level" class="text-xs font-mono text-slate-400">80%</span>
+        <button onclick="zoomIn()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold" title="Zoom In">🔍 +</button>
+        <button onclick="resetZoom()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold" title="Reset Zoom">100%</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div class="bg-gradient-to-r from-[#075B4F] via-[#087E6B] to-[#075B4F] text-white text-xs px-6 py-2 text-center border-b border-[#087E6B]/30 flex items-center justify-center gap-2">
+    <span class="inline-block w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+    <span><strong>Brand Overhaul Complete:</strong> Full migration from obsolete generic blue theme to production-grade Indian Emerald Green (#087E6B) & Warm White (#F7F9F7) design system with Material Design 3 rules.</span>
+  </div>
+
+  <main class="p-8">
+
+    <!-- VIEW 1: ALL 12 APPLICATION ARTBOARDS GRID -->
+    <div id="view-artboards" class="space-y-12">
+      <div class="max-w-7xl mx-auto flex items-end justify-between border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-2xl font-bold text-white tracking-tight">Application Artboards (12 Distinct Mobile Screens)</h2>
+          <p class="text-sm text-slate-400 mt-1">Each screen crafted as an independent 393 × 852 dp mobile viewport with strict 8dp rhythm, accessible contrast, and authentic Indian market details.</p>
+        </div>
+        <div class="text-xs font-mono text-emerald-400 bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-800/40">
+          Scale: 393 × 852 dp • 420 dpi reference
+        </div>
+      </div>
+
+      <!-- Artboard Canvas Container -->
+      <div id="zoom-canvas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 justify-items-center transition-transform origin-top">
+        
+        <!-- ARTBOARD 0: SPLASH SCREEN -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">00. SPLASH SCREEN</span>
+            <span class="text-slate-500">Brand Identity</span>
+          </div>
+          <div id="artboard-splash" class="artboard-frame bg-[#F7F9F7]">
+            <!-- Status Bar -->
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <div class="flex items-center gap-1.5 text-xs">
+                <span>5G</span>
+                <span>📶</span>
+                <span>🔋 98%</span>
+              </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="artboard-content flex flex-col items-center justify-between p-8 text-center">
+              <div></div>
+              
+              <!-- Center Logo & Name -->
+              <div class="flex flex-col items-center">
+                <div class="relative mb-6">
+                  <!-- Decorative subtle mint halo -->
+                  <div class="absolute -inset-4 bg-[#DDF1EA] rounded-full blur-xl opacity-70 pulse-logo"></div>
+                  
+                  <!-- Main Logo Icon Container -->
+                  <div class="relative w-28 h-28 rounded-3xl bg-gradient-to-br from-[#087E6B] to-[#075B4F] flex items-center justify-center shadow-xl shadow-[#087E6B]/25 border border-[#087E6B]/30">
+                    <svg class="w-16 h-16 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                      <path d="M3 6h18"/>
+                      <path d="M16 10a4 4 0 0 1-8 0"/>
+                      <!-- Medical Cross inside Bag -->
+                      <path d="M12 13v6" stroke="#DDF1EA" stroke-width="2.5"/>
+                      <path d="M9 16h6" stroke="#DDF1EA" stroke-width="2.5"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <h1 class="text-3xl font-extrabold text-[#172B27] tracking-tight">Medi<span class="text-[#087E6B]">Cart</span></h1>
+                <p class="text-sm font-semibold text-[#71817B] mt-2 tracking-wide uppercase text-[11px]">Healthcare, Made Convenient.</p>
+                <div class="mt-4 px-3 py-1 rounded-full bg-[#DDF1EA] text-[#087E6B] text-[11px] font-bold">
+                  🇮🇳 India's Trusted E-Pharmacy
+                </div>
+              </div>
+
+              <!-- Bottom Indicator & Launcher Spec -->
+              <div class="w-full flex flex-col items-center gap-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full bg-[#087E6B] animate-ping"></div>
+                  <span class="text-xs text-[#71817B]">Securing connection...</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-white border border-[#E5ECE8] w-full text-left flex items-center gap-3 shadow-xs">
+                  <div class="w-8 h-8 rounded-lg bg-[#087E6B] flex items-center justify-center text-white shrink-0">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 6v12M6 12h12"/></svg>
+                  </div>
+                  <div>
+                    <div class="text-[11px] font-bold text-[#172B27]">Reusable Launcher Icon</div>
+                    <div class="text-[10px] text-[#71817B]">Adaptive vector icon for Android home screen</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gesture Navigation Bar -->
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 1: LOGIN SCREEN -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">01. LOGIN</span>
+            <span class="text-slate-500">Authentication</span>
+          </div>
+          <div id="artboard-login" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <div class="artboard-content p-6 flex flex-col justify-between">
+              <div>
+                <!-- Brand Badge -->
+                <div class="flex items-center gap-2.5 mb-8">
+                  <div class="w-9 h-9 rounded-xl bg-[#087E6B] flex items-center justify-center text-white shadow-sm">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M12 13v5M9.5 15.5h5"/></svg>
+                  </div>
+                  <span class="text-lg font-bold text-[#172B27]">Medi<span class="text-[#087E6B]">Cart</span></span>
+                </div>
+
+                <div class="mb-8">
+                  <h2 class="text-2xl font-bold text-[#172B27] tracking-tight">Welcome to MediCart 👋</h2>
+                  <p class="text-sm text-[#71817B] mt-1.5">Enter your Indian mobile number to sign in or create your healthcare account.</p>
+                </div>
+
+                <!-- Phone Input Card -->
+                <div class="bg-white p-5 rounded-2xl border border-[#E5ECE8] shadow-sm mb-5">
+                  <label class="block text-xs font-bold text-[#172B27] uppercase tracking-wider mb-2">Mobile Number</label>
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#F7F9F7] border border-[#E5ECE8] text-sm font-semibold text-[#172B27]">
+                      <span>🇮🇳</span>
+                      <span>+91</span>
+                    </div>
+                    <div class="flex-1 px-3.5 py-2.5 rounded-xl border-2 border-[#087E6B] bg-white flex items-center justify-between">
+                      <span class="text-base font-semibold text-[#172B27]">98765 43210</span>
+                      <svg class="w-4 h-4 text-[#16865B]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    </div>
+                  </div>
+                  <p class="text-[11px] text-[#71817B] mt-2 flex items-center gap-1">
+                    <span>🔒</span> We will send a 6-digit OTP for instant login.
+                  </p>
+                </div>
+
+                <!-- Continue Button -->
+                <button class="w-full h-12 bg-[#087E6B] hover:bg-[#075B4F] text-white font-bold text-sm rounded-xl shadow-md shadow-[#087E6B]/20 transition-all flex items-center justify-center gap-2">
+                  <span>Get Verification Code</span>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+
+                <!-- Value Props -->
+                <div class="grid grid-cols-2 gap-3 mt-6">
+                  <div class="p-3 rounded-xl bg-[#DDF1EA]/50 border border-[#DDF1EA] text-left">
+                    <div class="text-xs font-bold text-[#087E6B]">Verified Generic Meds</div>
+                    <div class="text-[11px] text-[#71817B]">Quality tested formulations</div>
+                  </div>
+                  <div class="p-3 rounded-xl bg-[#DDF1EA]/50 border border-[#DDF1EA] text-left">
+                    <div class="text-xs font-bold text-[#087E6B]">Pin-Code Delivery</div>
+                    <div class="text-[11px] text-[#71817B]">Across 19,000+ Indian PINs</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer disclaimer -->
+              <div class="pt-6 border-t border-[#E5ECE8] text-center">
+                <p class="text-[11px] text-[#71817B] leading-relaxed">
+                  By tapping continue, you agree to MediCart's <a href="#" class="text-[#087E6B] font-semibold underline">Terms of Use</a> and <a href="#" class="text-[#087E6B] font-semibold underline">Privacy Policy</a>.
+                </p>
+              </div>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 2: OTP VERIFICATION -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">02. OTP VERIFICATION</span>
+            <span class="text-slate-500">Security</span>
+          </div>
+          <div id="artboard-otp" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <div class="artboard-content p-6 flex flex-col justify-between">
+              <div>
+                <!-- Top Nav Bar -->
+                <div class="flex items-center gap-3 mb-6">
+                  <button class="w-9 h-9 rounded-xl bg-white border border-[#E5ECE8] flex items-center justify-center text-[#172B27] shadow-xs">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  </button>
+                  <span class="text-xs font-bold uppercase tracking-wider text-[#71817B]">Verification</span>
+                </div>
+
+                <div class="mb-6">
+                  <h2 class="text-2xl font-bold text-[#172B27] tracking-tight">Enter 6-Digit OTP</h2>
+                  <p class="text-sm text-[#71817B] mt-1.5">
+                    We sent a verification SMS to <span class="font-bold text-[#172B27]">+91 98765 43210</span>.
+                    <a href="#" class="text-[#087E6B] font-semibold underline ml-1 text-xs">Edit</a>
+                  </p>
+                </div>
+
+                <!-- 6 Digit OTP Input Grid -->
+                <div class="grid grid-cols-6 gap-2 my-6">
+                  <div class="h-13 py-3 rounded-xl bg-white border-2 border-[#087E6B] text-center text-xl font-bold text-[#172B27] shadow-sm">4</div>
+                  <div class="h-13 py-3 rounded-xl bg-white border-2 border-[#087E6B] text-center text-xl font-bold text-[#172B27] shadow-sm">8</div>
+                  <div class="h-13 py-3 rounded-xl bg-white border-2 border-[#087E6B] text-center text-xl font-bold text-[#172B27] shadow-sm">7</div>
+                  <div class="h-13 py-3 rounded-xl bg-white border-2 border-[#087E6B] text-center text-xl font-bold text-[#172B27] shadow-sm">2</div>
+                  <div class="h-13 py-3 rounded-xl bg-white border-2 border-[#087E6B] text-center text-xl font-bold text-[#172B27] shadow-sm">1</div>
+                  <div class="h-13 py-3 rounded-xl bg-[#DDF1EA] border-2 border-[#087E6B] text-center text-xl font-bold text-[#087E6B] shadow-sm animate-pulse">|</div>
+                </div>
+
+                <!-- Timer & Resend -->
+                <div class="flex items-center justify-between text-xs px-1 mb-6">
+                  <span class="text-[#71817B]">Resend OTP in <strong class="text-[#172B27] font-mono">00:24s</strong></span>
+                  <button class="text-[#71817B] font-semibold opacity-60 cursor-not-allowed">Resend SMS</button>
+                </div>
+
+                <!-- Verify Button -->
+                <button class="w-full h-12 bg-[#087E6B] hover:bg-[#075B4F] text-white font-bold text-sm rounded-xl shadow-md shadow-[#087E6B]/20 transition-all flex items-center justify-center gap-2">
+                  <span>Verify & Proceed</span>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                </button>
+              </div>
+
+              <!-- Android Numeric Keypad Preview -->
+              <div class="bg-white/80 backdrop-blur rounded-2xl p-3 border border-[#E5ECE8] shadow-sm">
+                <div class="grid grid-cols-3 gap-2 text-center">
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">1</div>
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">2</div>
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">3</div>
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">4</div>
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">5</div>
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">6</div>
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">7</div>
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">8</div>
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">9</div>
+                  <div class="py-2.5 rounded-lg text-xs font-semibold text-[#71817B] flex items-center justify-center">CLEAR</div>
+                  <div class="py-2.5 rounded-lg hover:bg-[#F7F9F7] font-bold text-base text-[#172B27]">0</div>
+                  <div class="py-2.5 rounded-lg text-xs font-semibold text-[#71817B] flex items-center justify-center">⌫</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 3: HOME SCREEN -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">03. HOME SCREEN</span>
+            <span class="text-slate-500">Dashboard</span>
+          </div>
+          <div id="artboard-home" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <!-- Header Section -->
+            <div class="bg-white px-4 pt-2 pb-3 border-b border-[#E5ECE8]">
+              <!-- Location & Top Icons -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center font-bold">
+                    📍
+                  </div>
+                  <div>
+                    <div class="text-[10px] uppercase font-bold text-[#71817B] tracking-wider">Deliver To</div>
+                    <div class="text-xs font-bold text-[#172B27] flex items-center gap-1">
+                      <span>Indiranagar, Bengaluru - 560038</span>
+                      <svg class="w-3 h-3 text-[#087E6B]" viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <!-- Profile & Notification -->
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-full bg-[#F7F9F7] border border-[#E5ECE8] flex items-center justify-center text-xs relative">
+                    🔔
+                    <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D64B4B]"></span>
+                  </div>
+                  <div class="w-8 h-8 rounded-full bg-[#087E6B] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                    SK
+                  </div>
+                </div>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="relative">
+                <input type="text" readonly placeholder="Search medicines, health essentials..." class="w-full h-11 pl-10 pr-10 rounded-xl bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27] focus:outline-none">
+                <svg class="w-4 h-4 text-[#71817B] absolute left-3.5 top-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <span class="absolute right-3.5 top-3.5 text-xs text-[#087E6B]">🎙️</span>
+              </div>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="artboard-content px-4 py-4 space-y-5">
+              
+              <!-- Clean Health Banner -->
+              <div class="p-4 rounded-2xl bg-gradient-to-br from-[#087E6B] to-[#075B4F] text-white shadow-md shadow-[#087E6B]/15 relative overflow-hidden">
+                <div class="relative z-10 max-w-[210px]">
+                  <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-bold tracking-wide uppercase">Monsoon Wellness</span>
+                  <h3 class="text-base font-extrabold mt-1 leading-tight">Healthcare Essentials at Transparent Prices</h3>
+                  <p class="text-[11px] text-white/80 mt-1">Verified formulations delivered safely to your home.</p>
+                  <button class="mt-3 px-3 py-1.5 rounded-lg bg-white text-[#087E6B] font-bold text-[11px] shadow-sm">
+                    Explore Catalogue →
+                  </button>
+                </div>
+                <div class="absolute -right-3 -bottom-4 w-32 h-32 opacity-20">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+              </div>
+
+              <!-- Categories Section -->
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-sm font-bold text-[#172B27]">Shop by Category</h3>
+                  <a href="#" class="text-xs font-bold text-[#087E6B]">View All (8)</a>
+                </div>
+                <div class="grid grid-cols-4 gap-2.5">
+                  <div class="bg-white p-2.5 rounded-xl border border-[#E5ECE8] flex flex-col items-center text-center shadow-2xs">
+                    <div class="w-10 h-10 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center text-lg mb-1.5">💊</div>
+                    <span class="text-[11px] font-bold text-[#172B27]">Pain Relief</span>
+                    <span class="text-[9px] text-[#71817B]">42 items</span>
+                  </div>
+                  <div class="bg-white p-2.5 rounded-xl border border-[#E5ECE8] flex flex-col items-center text-center shadow-2xs">
+                    <div class="w-10 h-10 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center text-lg mb-1.5">🫁</div>
+                    <span class="text-[11px] font-bold text-[#172B27]">Cough & Cold</span>
+                    <span class="text-[9px] text-[#71817B]">38 items</span>
+                  </div>
+                  <div class="bg-white p-2.5 rounded-xl border border-[#E5ECE8] flex flex-col items-center text-center shadow-2xs">
+                    <div class="w-10 h-10 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center text-lg mb-1.5">🩺</div>
+                    <span class="text-[11px] font-bold text-[#172B27]">First Aid</span>
+                    <span class="text-[9px] text-[#71817B]">29 items</span>
+                  </div>
+                  <div class="bg-white p-2.5 rounded-xl border border-[#E5ECE8] flex flex-col items-center text-center shadow-2xs">
+                    <div class="w-10 h-10 rounded-lg bg-[#DDF1EA] text-[#087E6B] flex items-center justify-center text-lg mb-1.5">🛡️</div>
+                    <span class="text-[11px] font-bold text-[#172B27]">Vitamins</span>
+                    <span class="text-[9px] text-[#71817B]">54 items</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Featured Products Section -->
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 class="text-sm font-bold text-[#172B27]">Featured Medicines</h3>
+                    <p class="text-[10px] text-[#71817B]">Verified pharmacy items</p>
+                  </div>
+                  <a href="#" class="text-xs font-bold text-[#087E6B]">See More</a>
+                </div>
+
+                <!-- Product Grid (2 columns) -->
+                <div class="grid grid-cols-2 gap-3">
+                  
+                  <!-- Product Card 1 -->
+                  <div class="bg-white rounded-xl border border-[#E5ECE8] p-3 flex flex-col justify-between shadow-xs">
+                    <div>
+                      <div class="w-full h-24 rounded-lg bg-[#F7F9F7] flex items-center justify-center relative mb-2">
+                        <span class="text-3xl">💊</span>
+                        <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#DDF1EA] text-[#087E6B]">10% OFF</span>
+                      </div>
+                      <div class="text-[10px] font-bold text-[#16865B] mb-0.5">● In Stock</div>
+                      <h4 class="text-xs font-bold text-[#172B27] leading-snug">Paracare 650mg</h4>
+                      <p class="text-[10px] text-[#71817B]">Strip of 15 Tablets</p>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-[#E5ECE8] flex items-center justify-between">
+                      <div>
+                        <div class="text-xs font-extrabold text-[#172B27]">₹34.00</div>
+                        <div class="text-[9px] text-[#71817B] line-through">₹38.00</div>
+                      </div>
+                      <button class="px-2.5 py-1 bg-[#087E6B] text-white text-[11px] font-bold rounded-lg shadow-xs hover:bg-[#075B4F]">
+                        + Add
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Product Card 2 -->
+                  <div class="bg-white rounded-xl border border-[#E5ECE8] p-3 flex flex-col justify-between shadow-xs">
+                    <div>
+                      <div class="w-full h-24 rounded-lg bg-[#F7F9F7] flex items-center justify-center relative mb-2">
+                        <span class="text-3xl">🌿</span>
+                        <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#DDF1EA] text-[#087E6B]">15% OFF</span>
+                      </div>
+                      <div class="text-[10px] font-bold text-[#16865B] mb-0.5">● In Stock</div>
+                      <h4 class="text-xs font-bold text-[#172B27] leading-snug">AyurTulsi Syrup</h4>
+                      <p class="text-[10px] text-[#71817B]">Bottle of 100 ml</p>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-[#E5ECE8] flex items-center justify-between">
+                      <div>
+                        <div class="text-xs font-extrabold text-[#172B27]">₹85.00</div>
+                        <div class="text-[9px] text-[#71817B] line-through">₹99.00</div>
+                      </div>
+                      <button class="px-2.5 py-1 bg-[#087E6B] text-white text-[11px] font-bold rounded-lg shadow-xs hover:bg-[#075B4F]">
+                        + Add
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Recently Viewed Strip -->
+              <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-10 h-10 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-lg">🩺</div>
+                  <div>
+                    <div class="text-xs font-bold text-[#172B27]">OmniTherm Digital Thermometer</div>
+                    <div class="text-[10px] text-[#71817B]">1 Unit • ₹199.00</div>
+                  </div>
+                </div>
+                <button class="text-xs font-bold text-[#087E6B]">View</button>
+              </div>
+
+            </div>
+
+            <!-- Bottom Navigation Bar (4 Items) -->
+            <div class="bg-white border-t border-[#E5ECE8] px-4 py-2 flex justify-around items-center">
+              <div class="flex flex-col items-center text-[#087E6B]">
+                <div class="w-6 h-6 flex items-center justify-center text-sm">🏠</div>
+                <span class="text-[10px] font-bold mt-0.5">Home</span>
+              </div>
+              <div class="flex flex-col items-center text-[#71817B]">
+                <div class="w-6 h-6 flex items-center justify-center text-sm">📑</div>
+                <span class="text-[10px] font-medium mt-0.5">Catalogue</span>
+              </div>
+              <div class="flex flex-col items-center text-[#71817B]">
+                <div class="w-6 h-6 flex items-center justify-center text-sm">📦</div>
+                <span class="text-[10px] font-medium mt-0.5">Orders</span>
+              </div>
+              <div class="flex flex-col items-center text-[#71817B] relative">
+                <div class="w-6 h-6 flex items-center justify-center text-sm relative">
+                  🛍️
+                  <span class="absolute -top-1 -right-2 bg-[#087E6B] text-white text-[9px] font-bold px-1 rounded-full">2</span>
+                </div>
+                <span class="text-[10px] font-medium mt-0.5">Cart</span>
+              </div>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 4: MEDICINE CATALOGUE -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">04. CATALOGUE & SEARCH</span>
+            <span class="text-slate-500">Products</span>
+          </div>
+          <div id="artboard-catalogue" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <!-- App Bar -->
+            <div class="bg-white px-4 py-2.5 border-b border-[#E5ECE8] space-y-2.5">
+              <div class="flex items-center gap-3">
+                <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-[#172B27]">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <div class="flex-1 relative">
+                  <input type="text" value="Paracetamol" class="w-full h-9 pl-9 pr-7 rounded-lg bg-[#F7F9F7] border border-[#087E6B] text-xs font-semibold text-[#172B27] focus:outline-none">
+                  <svg class="w-3.5 h-3.5 text-[#087E6B] absolute left-3 top-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <span class="text-xs text-[#71817B] absolute right-2.5 top-2.5 cursor-pointer">✕</span>
+                </div>
+                <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] flex items-center justify-center text-xs">
+                  ⚙️
+                </button>
+              </div>
+
+              <!-- Filter Pills -->
+              <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+                <span class="px-2.5 py-1 rounded-full bg-[#087E6B] text-white font-bold text-[11px] whitespace-nowrap">All (14)</span>
+                <span class="px-2.5 py-1 rounded-full bg-white border border-[#E5ECE8] text-[#172B27] font-medium text-[11px] whitespace-nowrap">Tablets (8)</span>
+                <span class="px-2.5 py-1 rounded-full bg-white border border-[#E5ECE8] text-[#172B27] font-medium text-[11px] whitespace-nowrap">Syrup (4)</span>
+                <span class="px-2.5 py-1 rounded-full bg-white border border-[#E5ECE8] text-[#172B27] font-medium text-[11px] whitespace-nowrap">Drops (2)</span>
+              </div>
+            </div>
+
+            <!-- Filter Status Bar -->
+            <div class="px-4 py-2 bg-[#F7F9F7] flex items-center justify-between text-[11px] text-[#71817B] border-b border-[#E5ECE8]">
+              <span>Showing 14 results for <strong>"Paracetamol"</strong></span>
+              <span class="font-bold text-[#087E6B] flex items-center gap-1 cursor-pointer">Sort: Price Low → High ▾</span>
+            </div>
+
+            <!-- Product List Cards -->
+            <div class="artboard-content px-4 py-3 space-y-3">
+              
+              <!-- Card 1 -->
+              <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] flex gap-3 shadow-2xs">
+                <div class="w-20 h-20 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-3xl shrink-0">
+                  💊
+                </div>
+                <div class="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-bold text-[#16865B]">● In Stock</span>
+                      <span class="text-[9px] font-bold text-[#087E6B] bg-[#DDF1EA] px-1.5 py-0.5 rounded">10% OFF</span>
+                    </div>
+                    <h4 class="text-xs font-bold text-[#172B27] mt-0.5">Paracare 650mg Tablets</h4>
+                    <p class="text-[10px] text-[#71817B]">Strip of 15 Tablets • Paracetamol IP</p>
+                  </div>
+                  <div class="flex items-center justify-between mt-2 pt-1 border-t border-[#E5ECE8]">
+                    <div class="flex items-baseline gap-1.5">
+                      <span class="text-sm font-extrabold text-[#172B27]">₹34.00</span>
+                      <span class="text-[10px] text-[#71817B] line-through">₹38.00</span>
+                    </div>
+                    <!-- Quantity Stepper -->
+                    <div class="flex items-center gap-2 bg-[#DDF1EA] px-2 py-1 rounded-lg">
+                      <button class="text-xs font-bold text-[#087E6B]">-</button>
+                      <span class="text-xs font-bold text-[#172B27]">1</span>
+                      <button class="text-xs font-bold text-[#087E6B]">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2 -->
+              <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] flex gap-3 shadow-2xs">
+                <div class="w-20 h-20 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-3xl shrink-0">
+                  🧴
+                </div>
+                <div class="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-bold text-[#16865B]">● In Stock</span>
+                      <span class="text-[9px] font-bold text-[#087E6B] bg-[#DDF1EA] px-1.5 py-0.5 rounded">12% OFF</span>
+                    </div>
+                    <h4 class="text-xs font-bold text-[#172B27] mt-0.5">Paracare Pediatric Syrup</h4>
+                    <p class="text-[10px] text-[#71817B]">Bottle of 60 ml • 120mg/5ml</p>
+                  </div>
+                  <div class="flex items-center justify-between mt-2 pt-1 border-t border-[#E5ECE8]">
+                    <div class="flex items-baseline gap-1.5">
+                      <span class="text-sm font-extrabold text-[#172B27]">₹42.00</span>
+                      <span class="text-[10px] text-[#71817B] line-through">₹48.00</span>
+                    </div>
+                    <button class="px-3 py-1 bg-[#087E6B] text-white text-[11px] font-bold rounded-lg shadow-xs">
+                      + Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 3: Low Stock Example -->
+              <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] flex gap-3 shadow-2xs">
+                <div class="w-20 h-20 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-3xl shrink-0">
+                  💊
+                </div>
+                <div class="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-bold text-[#E49A32]">⚡ Only 3 left</span>
+                    </div>
+                    <h4 class="text-xs font-bold text-[#172B27] mt-0.5">Paracare 500mg Standard</h4>
+                    <p class="text-[10px] text-[#71817B]">Strip of 10 Tablets • Paracetamol IP</p>
+                  </div>
+                  <div class="flex items-center justify-between mt-2 pt-1 border-t border-[#E5ECE8]">
+                    <div class="flex items-baseline gap-1.5">
+                      <span class="text-sm font-extrabold text-[#172B27]">₹22.00</span>
+                      <span class="text-[10px] text-[#71817B] line-through">₹25.00</span>
+                    </div>
+                    <button class="px-3 py-1 bg-[#087E6B] text-white text-[11px] font-bold rounded-lg shadow-xs">
+                      + Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="bg-white border-t border-[#E5ECE8] px-4 py-2 flex justify-around items-center">
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">🏠</span><span class="text-[10px] font-medium">Home</span></div>
+              <div class="flex flex-col items-center text-[#087E6B]"><span class="text-sm">📑</span><span class="text-[10px] font-bold">Catalogue</span></div>
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">📦</span><span class="text-[10px] font-medium">Orders</span></div>
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">🛍️</span><span class="text-[10px] font-medium">Cart</span></div>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 5: PRODUCT DETAILS -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">05. PRODUCT DETAILS</span>
+            <span class="text-slate-500">Specifications</span>
+          </div>
+          <div id="artboard-product" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <!-- App Bar -->
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] flex items-center justify-between">
+              <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-[#172B27]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </button>
+              <span class="text-xs font-bold text-[#172B27]">Medicine Details</span>
+              <div class="flex items-center gap-2">
+                <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-xs">🤍</button>
+                <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-xs relative">
+                  🛍️
+                  <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#087E6B]"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="artboard-content px-4 py-4 space-y-4">
+              <!-- Large Product Image Showcase -->
+              <div class="w-full h-48 rounded-2xl bg-white border border-[#E5ECE8] flex items-center justify-center relative shadow-xs">
+                <span class="text-6xl">💊</span>
+                <span class="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DDF1EA] text-[#087E6B]">Verified Generic</span>
+                <span class="absolute bottom-3 right-3 text-[10px] text-[#71817B] bg-[#F7F9F7] px-2 py-1 rounded-md border border-[#E5ECE8]">Standard Blister Pack</span>
+              </div>
+
+              <!-- Title & Price Block -->
+              <div class="bg-white p-4 rounded-2xl border border-[#E5ECE8] shadow-xs">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[11px] font-bold text-[#16865B]">● In Stock • Ready for dispatch</span>
+                  <span class="text-[10px] font-bold text-[#087E6B] bg-[#DDF1EA] px-2 py-0.5 rounded-full">10% Savings</span>
+                </div>
+                <h2 class="text-lg font-bold text-[#172B27]">Paracare 650mg Tablets</h2>
+                <p class="text-xs text-[#71817B] mt-0.5">Strip of 15 Tablets • Oral Solid Dosage</p>
+
+                <div class="flex items-baseline gap-2 mt-3 pt-3 border-t border-[#E5ECE8]">
+                  <span class="text-2xl font-extrabold text-[#172B27]">₹34.00</span>
+                  <span class="text-xs text-[#71817B] line-through">MRP ₹38.00</span>
+                  <span class="text-[10px] text-[#71817B] ml-auto">Inclusive of all taxes</span>
+                </div>
+              </div>
+
+              <!-- Product Information (Fictional Catalogue Specification) -->
+              <div class="bg-white p-4 rounded-2xl border border-[#E5ECE8] shadow-xs space-y-3">
+                <h3 class="text-xs font-bold text-[#172B27] uppercase tracking-wider">Product Information</h3>
+                
+                <div class="space-y-2 text-xs">
+                  <div class="flex justify-between py-1 border-b border-[#F7F9F7]">
+                    <span class="text-[#71817B]">Active Ingredient</span>
+                    <span class="font-bold text-[#172B27]">Paracetamol IP 650 mg</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-[#F7F9F7]">
+                    <span class="text-[#71817B]">Form & Packaging</span>
+                    <span class="font-bold text-[#172B27]">15 Tablets in Blister Pack</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-[#F7F9F7]">
+                    <span class="text-[#71817B]">Storage Instruction</span>
+                    <span class="font-bold text-[#172B27]">Store below 25°C in dry place</span>
+                  </div>
+                  <div class="flex justify-between py-1">
+                    <span class="text-[#71817B]">Return Policy</span>
+                    <span class="font-bold text-[#172B27]">7 Days Returnable</span>
+                  </div>
+                </div>
+
+                <!-- Compliance / Disclaimer Notice -->
+                <div class="p-3 rounded-xl bg-[#F7F9F7] border border-[#E5ECE8] text-[10px] text-[#71817B] leading-relaxed">
+                  ℹ️ <strong>Healthcare Disclaimer:</strong> MediCart provides verified fictional pharmacy product data for order fulfillment demo. No dosage or medical advice is provided.
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Sticky Bottom Bar -->
+            <div class="bg-white border-t border-[#E5ECE8] p-3 flex items-center gap-3">
+              <!-- Quantity Stepper -->
+              <div class="flex items-center gap-3 bg-[#F7F9F7] border border-[#E5ECE8] px-3 py-2 rounded-xl">
+                <button class="text-sm font-bold text-[#71817B]">-</button>
+                <span class="text-xs font-bold text-[#172B27]">1</span>
+                <button class="text-sm font-bold text-[#087E6B]">+</button>
+              </div>
+
+              <!-- Add to Cart Primary Button -->
+              <button class="flex-1 h-11 bg-[#087E6B] hover:bg-[#075B4F] text-white font-bold text-xs rounded-xl shadow-md shadow-[#087E6B]/20 flex items-center justify-center gap-2">
+                <span>Add to Cart</span>
+                <span>•</span>
+                <span>₹34.00</span>
+              </button>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 6: SHOPPING CART -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">06. SHOPPING CART</span>
+            <span class="text-slate-500">Order Bag</span>
+          </div>
+          <div id="artboard-cart" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <!-- App Bar -->
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-[#172B27]">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <span class="text-sm font-bold text-[#172B27]">Shopping Cart (2 items)</span>
+              </div>
+              <button class="text-xs font-bold text-[#D64B4B]">Clear</button>
+            </div>
+
+            <div class="artboard-content px-4 py-3 space-y-3">
+              
+              <!-- Delivery Location Strip -->
+              <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">📍</span>
+                  <div class="leading-tight">
+                    <span class="text-[10px] text-[#71817B] block">Delivering to:</span>
+                    <strong class="text-[#172B27]">Indiranagar, Bengaluru - 560038</strong>
+                  </div>
+                </div>
+                <button class="text-[#087E6B] font-bold text-xs">Change</button>
+              </div>
+
+              <!-- Cart Item 1 -->
+              <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] flex gap-3 shadow-2xs">
+                <div class="w-16 h-16 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-2xl shrink-0">
+                  💊
+                </div>
+                <div class="flex-1 flex flex-col justify-between">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="text-xs font-bold text-[#172B27]">Paracare 650mg Tablets</h4>
+                      <p class="text-[10px] text-[#71817B]">Strip of 15 Tablets</p>
+                    </div>
+                    <button class="text-[#71817B] hover:text-[#D64B4B] text-xs">✕</button>
+                  </div>
+                  <div class="flex items-center justify-between mt-2">
+                    <span class="text-xs font-bold text-[#172B27]">₹68.00 <span class="text-[9px] text-[#71817B] font-normal">(₹34 × 2)</span></span>
+                    <div class="flex items-center gap-2 bg-[#DDF1EA] px-2 py-0.5 rounded-lg">
+                      <button class="text-xs font-bold text-[#087E6B]">-</button>
+                      <span class="text-xs font-bold text-[#172B27]">2</span>
+                      <button class="text-xs font-bold text-[#087E6B]">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cart Item 2 -->
+              <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] flex gap-3 shadow-2xs">
+                <div class="w-16 h-16 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-2xl shrink-0">
+                  🌿
+                </div>
+                <div class="flex-1 flex flex-col justify-between">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="text-xs font-bold text-[#172B27]">AyurTulsi Cough Syrup</h4>
+                      <p class="text-[10px] text-[#71817B]">Bottle of 100 ml</p>
+                    </div>
+                    <button class="text-[#71817B] hover:text-[#D64B4B] text-xs">✕</button>
+                  </div>
+                  <div class="flex items-center justify-between mt-2">
+                    <span class="text-xs font-bold text-[#172B27]">₹85.00 <span class="text-[9px] text-[#71817B] font-normal">(₹85 × 1)</span></span>
+                    <div class="flex items-center gap-2 bg-[#DDF1EA] px-2 py-0.5 rounded-lg">
+                      <button class="text-xs font-bold text-[#087E6B]">-</button>
+                      <span class="text-xs font-bold text-[#172B27]">1</span>
+                      <button class="text-xs font-bold text-[#087E6B]">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Price Breakdown Summary -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs space-y-2">
+                <h4 class="text-xs font-bold text-[#172B27] uppercase tracking-wider">Bill Details</h4>
+                <div class="space-y-1.5 text-xs">
+                  <div class="flex justify-between text-[#71817B]">
+                    <span>Item Total</span>
+                    <span class="text-[#172B27] font-medium">₹153.00</span>
+                  </div>
+                  <div class="flex justify-between text-[#71817B]">
+                    <span>Standard Delivery Fee</span>
+                    <span class="text-[#172B27] font-medium">₹30.00</span>
+                  </div>
+                  <div class="flex justify-between text-[#71817B]">
+                    <span>Packaging & Safety Charge</span>
+                    <span class="text-[#172B27] font-medium">₹14.00</span>
+                  </div>
+                  <div class="flex justify-between text-[#087E6B] font-semibold text-[11px]">
+                    <span>Total Discount Saved</span>
+                    <span>-₹18.00</span>
+                  </div>
+                  <div class="pt-2 border-t border-[#E5ECE8] flex justify-between items-center text-sm font-extrabold text-[#172B27]">
+                    <span>Total Amount</span>
+                    <span>₹197.00</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Sticky Checkout Bar -->
+            <div class="bg-white border-t border-[#E5ECE8] p-3 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-[#71817B] uppercase font-bold block">Payable Total</span>
+                <span class="text-base font-extrabold text-[#172B27]">₹197.00</span>
+              </div>
+              <button class="h-11 px-6 bg-[#087E6B] hover:bg-[#075B4F] text-white font-bold text-xs rounded-xl shadow-md shadow-[#087E6B]/20 flex items-center gap-2">
+                <span>Proceed to Checkout</span>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 7: DELIVERY ADDRESS -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">07. DELIVERY ADDRESS</span>
+            <span class="text-slate-500">Indian Format</span>
+          </div>
+          <div id="artboard-address" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <!-- App Bar -->
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] flex items-center gap-3">
+              <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-[#172B27]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </button>
+              <span class="text-sm font-bold text-[#172B27]">Add Delivery Address</span>
+            </div>
+
+            <!-- Form Content -->
+            <div class="artboard-content px-4 py-4 space-y-3.5">
+              
+              <!-- Contact Info Block -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs space-y-2.5">
+                <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider block">Recipient Information</span>
+                <div>
+                  <label class="block text-[11px] font-semibold text-[#172B27] mb-1">Full Name</label>
+                  <input type="text" value="Sahil Kumar" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-[#172B27] mb-1">Mobile (+91)</label>
+                  <input type="text" value="+91 98765 43210" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+                </div>
+              </div>
+
+              <!-- Address Details Block -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs space-y-2.5">
+                <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider block">Address Details</span>
+                
+                <div>
+                  <label class="block text-[11px] font-semibold text-[#172B27] mb-1">Flat / House No. / Building</label>
+                  <input type="text" value="Flat 402, Block B, Shanti Vihar" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-semibold text-[#172B27] mb-1">Street / Locality</label>
+                  <input type="text" value="12th Main Road, HAL 2nd Stage" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-[#172B27] mb-1">City</label>
+                    <input type="text" value="Bengaluru" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-[#172B27] mb-1">State</label>
+                    <input type="text" value="Karnataka" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-xs font-medium text-[#172B27]">
+                  </div>
+                </div>
+
+                <!-- 6-digit PIN code with validation badge -->
+                <div>
+                  <label class="block text-[11px] font-semibold text-[#172B27] mb-1">6-Digit PIN Code</label>
+                  <div class="relative">
+                    <input type="text" value="560038" class="w-full h-9 px-3 rounded-lg bg-white border-2 border-[#16865B] text-xs font-bold text-[#172B27]">
+                    <span class="absolute right-2.5 top-2 text-[10px] font-bold text-[#16865B] flex items-center gap-1">
+                      ✓ Deliverable Area
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Address Tag Chips -->
+              <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] shadow-xs">
+                <label class="block text-[10px] font-bold text-[#71817B] uppercase tracking-wider mb-2">Save Address As</label>
+                <div class="flex gap-2">
+                  <button class="px-3 py-1.5 rounded-lg bg-[#087E6B] text-white text-xs font-bold shadow-xs">🏠 Home</button>
+                  <button class="px-3 py-1.5 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-[#172B27] text-xs font-medium">🏢 Work</button>
+                  <button class="px-3 py-1.5 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-[#172B27] text-xs font-medium">📍 Other</button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Sticky Save Button -->
+            <div class="bg-white border-t border-[#E5ECE8] p-3">
+              <button class="w-full h-11 bg-[#087E6B] hover:bg-[#075B4F] text-white font-bold text-xs rounded-xl shadow-md shadow-[#087E6B]/20">
+                Save & Deliver Here
+              </button>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 8: CHECKOUT -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">08. CHECKOUT & PAYMENT</span>
+            <span class="text-slate-500">Simulated Gateway</span>
+          </div>
+          <div id="artboard-checkout" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <!-- App Bar -->
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] flex items-center gap-3">
+              <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-[#172B27]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </button>
+              <span class="text-sm font-bold text-[#172B27]">Checkout & Review</span>
+            </div>
+
+            <div class="artboard-content px-4 py-3 space-y-3">
+              
+              <!-- Address Confirmation Card -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider">Delivering To</span>
+                  <a href="#" class="text-xs font-bold text-[#087E6B]">Change</a>
+                </div>
+                <div class="flex items-start gap-2.5">
+                  <span class="text-base">🏠</span>
+                  <div>
+                    <h5 class="text-xs font-bold text-[#172B27]">Sahil Kumar • +91 98765 43210</h5>
+                    <p class="text-[11px] text-[#71817B] mt-0.5 leading-snug">Flat 402, Block B, Shanti Vihar, 12th Main Road, Indiranagar, Bengaluru - 560038</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order Summary Strip -->
+              <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] flex items-center justify-between text-xs shadow-xs">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">📦</span>
+                  <span><strong>2 items</strong> in order</span>
+                </div>
+                <span class="font-bold text-[#172B27]">₹197.00 Total</span>
+              </div>
+
+              <!-- Simulated Payment Methods (Indian Market) -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider">Payment Method (Simulated)</span>
+                  <span class="text-[9px] font-bold text-[#087E6B] bg-[#DDF1EA] px-2 py-0.5 rounded-full">Test Sandbox</span>
+                </div>
+
+                <!-- Mandatory Simulation Notice -->
+                <div class="p-2.5 rounded-lg bg-[#DDF1EA]/50 border border-[#DDF1EA] text-[10px] text-[#075B4F] leading-tight">
+                  ℹ️ <strong>Simulated Payment:</strong> No real funds or banking transactions occur. This tests order confirmation reliability.
+                </div>
+
+                <!-- UPI Option (Active) -->
+                <div class="p-3 rounded-xl border-2 border-[#087E6B] bg-[#F7F9F7] flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <input type="radio" checked class="w-4 h-4 accent-[#087E6B]">
+                    <div>
+                      <div class="text-xs font-bold text-[#172B27] flex items-center gap-1.5">
+                        <span>⚡ UPI (Simulated)</span>
+                        <span class="text-[10px] font-bold bg-[#DDF1EA] text-[#087E6B] px-1.5 rounded">Fastest</span>
+                      </div>
+                      <div class="text-[10px] text-[#71817B]">Google Pay, PhonePe, Paytm, or UPI ID</div>
+                    </div>
+                  </div>
+                  <span class="text-base">📲</span>
+                </div>
+
+                <!-- Cash on Delivery Option -->
+                <div class="p-3 rounded-xl border border-[#E5ECE8] flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <input type="radio" class="w-4 h-4 accent-[#087E6B]">
+                    <div>
+                      <div class="text-xs font-bold text-[#172B27]">💵 Cash on Delivery</div>
+                      <div class="text-[10px] text-[#71817B]">Pay at delivery via Cash or QR</div>
+                    </div>
+                  </div>
+                  <span class="text-base">🤝</span>
+                </div>
+
+                <!-- Card Option -->
+                <div class="p-3 rounded-xl border border-[#E5ECE8] flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <input type="radio" class="w-4 h-4 accent-[#087E6B]">
+                    <div>
+                      <div class="text-xs font-bold text-[#172B27]">💳 Debit / Credit Card (Demo)</div>
+                      <div class="text-[10px] text-[#71817B]">RuPay, Visa, Mastercard sandbox</div>
+                    </div>
+                  </div>
+                  <span class="text-base">💳</span>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Sticky Place Order Button -->
+            <div class="bg-white border-t border-[#E5ECE8] p-3 flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-[#71817B] uppercase font-bold block">Total Payable</span>
+                <span class="text-base font-extrabold text-[#172B27]">₹197.00</span>
+              </div>
+              <button class="h-11 px-6 bg-[#087E6B] hover:bg-[#075B4F] text-white font-bold text-xs rounded-xl shadow-md shadow-[#087E6B]/20 flex items-center gap-2">
+                <span>Place Order (Demo)</span>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 9: ORDER CONFIRMATION -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">09. ORDER CONFIRMATION</span>
+            <span class="text-slate-500">Confirmed State</span>
+          </div>
+          <div id="artboard-confirmation" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <div class="artboard-content p-6 flex flex-col justify-between text-center">
+              <div></div>
+
+              <!-- Success Card Area -->
+              <div class="flex flex-col items-center">
+                
+                <!-- Animated Success Badge -->
+                <div class="relative mb-5">
+                  <div class="w-20 h-20 rounded-full bg-[#DDF1EA] flex items-center justify-center pulse-logo">
+                    <div class="w-14 h-14 rounded-full bg-[#16865B] flex items-center justify-center text-white shadow-lg shadow-[#16865B]/30">
+                      <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <span class="px-3 py-1 rounded-full bg-[#DDF1EA] text-[#087E6B] text-[11px] font-bold uppercase tracking-wider mb-2">Backend Confirmed</span>
+                <h2 class="text-2xl font-extrabold text-[#172B27] tracking-tight">Order Placed Successfully!</h2>
+                <p class="text-xs text-[#71817B] mt-1.5 max-w-[260px]">
+                  Your medicine order request has been received and confirmed by the local pharmacy dispensary.
+                </p>
+
+                <!-- Order Reference Details Card -->
+                <div class="w-full bg-white p-4 rounded-2xl border border-[#E5ECE8] shadow-xs mt-6 text-left space-y-2.5">
+                  <div class="flex justify-between items-center pb-2 border-b border-[#E5ECE8]">
+                    <span class="text-[10px] text-[#71817B] uppercase font-bold">Order ID</span>
+                    <span class="text-xs font-mono font-bold text-[#087E6B]">#MC-2026-8942</span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-[#71817B]">Order Date</span>
+                    <span class="font-semibold text-[#172B27]">09 Nov 2026, 10:24 PM</span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-[#71817B]">Estimated Delivery</span>
+                    <span class="font-bold text-[#16865B]">Tomorrow by 11:00 AM</span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-[#71817B]">Paid Amount</span>
+                    <span class="font-extrabold text-[#172B27]">₹197.00 (UPI Demo)</span>
+                  </div>
+                  <div class="flex justify-between text-xs pt-2 border-t border-[#E5ECE8] items-center">
+                    <span class="text-[#71817B]">Current Status</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DDF1EA] text-[#087E6B]">● Pharmacist Verification</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="space-y-2.5 pt-4">
+                <button class="w-full h-12 bg-[#087E6B] hover:bg-[#075B4F] text-white font-bold text-xs rounded-xl shadow-md shadow-[#087E6B]/20">
+                  View Order Details & Status
+                </button>
+                <button class="w-full h-11 bg-white border border-[#E5ECE8] hover:bg-[#F7F9F7] text-[#172B27] font-bold text-xs rounded-xl shadow-xs">
+                  Continue Shopping
+                </button>
+              </div>
+
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 10: ORDER HISTORY -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">10. ORDER HISTORY</span>
+            <span class="text-slate-500">Past Orders</span>
+          </div>
+          <div id="artboard-history" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <!-- App Bar -->
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] flex items-center justify-between">
+              <span class="text-base font-bold text-[#172B27]">Order History</span>
+              <span class="text-xs font-semibold text-[#71817B]">4 Total</span>
+            </div>
+
+            <!-- Tab Filter Strip -->
+            <div class="bg-white px-4 py-2 border-b border-[#E5ECE8] flex gap-2">
+              <span class="px-3 py-1 rounded-full bg-[#087E6B] text-white font-bold text-[11px]">All</span>
+              <span class="px-3 py-1 rounded-full bg-[#F7F9F7] text-[#71817B] font-medium text-[11px]">Active (1)</span>
+              <span class="px-3 py-1 rounded-full bg-[#F7F9F7] text-[#71817B] font-medium text-[11px]">Completed (2)</span>
+              <span class="px-3 py-1 rounded-full bg-[#F7F9F7] text-[#71817B] font-medium text-[11px]">Cancelled (1)</span>
+            </div>
+
+            <div class="artboard-content px-4 py-3 space-y-3">
+              
+              <!-- Order 1: Current / Processing -->
+              <div class="bg-white p-3.5 rounded-xl border-2 border-[#087E6B] shadow-xs space-y-2.5">
+                <div class="flex justify-between items-center">
+                  <span class="font-mono text-xs font-bold text-[#087E6B]">#MC-2026-8942</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#DDF1EA] text-[#087E6B]">● In Processing</span>
+                </div>
+                <div class="text-[11px] text-[#71817B]">Placed on 09 Nov 2026, 10:24 PM</div>
+                <div class="flex items-center justify-between pt-2 border-t border-[#E5ECE8]">
+                  <div>
+                    <span class="text-xs font-bold text-[#172B27]">₹197.00</span>
+                    <span class="text-[10px] text-[#71817B] block">2 Products (Paracare, AyurTulsi)</span>
+                  </div>
+                  <button class="px-3 py-1 bg-[#087E6B] text-white text-[11px] font-bold rounded-lg shadow-xs">
+                    Track →
+                  </button>
+                </div>
+              </div>
+
+              <!-- Order 2: Delivered -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-2xs space-y-2.5">
+                <div class="flex justify-between items-center">
+                  <span class="font-mono text-xs font-bold text-[#172B27]">#MC-2026-7810</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-[#16865B]">✓ Delivered</span>
+                </div>
+                <div class="text-[11px] text-[#71817B]">Delivered on 05 Nov 2026, 04:12 PM</div>
+                <div class="flex items-center justify-between pt-2 border-t border-[#E5ECE8]">
+                  <div>
+                    <span class="text-xs font-bold text-[#172B27]">₹216.00</span>
+                    <span class="text-[10px] text-[#71817B] block">3 Products (First Aid, Bandages)</span>
+                  </div>
+                  <button class="px-3 py-1 bg-[#F7F9F7] border border-[#E5ECE8] text-[#172B27] text-[11px] font-bold rounded-lg">
+                    Reorder
+                  </button>
+                </div>
+              </div>
+
+              <!-- Order 3: Cancelled -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-2xs space-y-2.5 opacity-80">
+                <div class="flex justify-between items-center">
+                  <span class="font-mono text-xs font-bold text-[#71817B]">#MC-2026-5190</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-[#D64B4B]">✕ Cancelled</span>
+                </div>
+                <div class="text-[11px] text-[#71817B]">Cancelled on 28 Oct 2026</div>
+                <div class="flex items-center justify-between pt-2 border-t border-[#E5ECE8]">
+                  <div>
+                    <span class="text-xs font-bold text-[#172B27]">₹72.00</span>
+                    <span class="text-[10px] text-[#71817B] block">Refund processed to UPI</span>
+                  </div>
+                  <button class="text-xs font-semibold text-[#71817B]">Details</button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="bg-white border-t border-[#E5ECE8] px-4 py-2 flex justify-around items-center">
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">🏠</span><span class="text-[10px] font-medium">Home</span></div>
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">📑</span><span class="text-[10px] font-medium">Catalogue</span></div>
+              <div class="flex flex-col items-center text-[#087E6B]"><span class="text-sm">📦</span><span class="text-[10px] font-bold">Orders</span></div>
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">🛍️</span><span class="text-[10px] font-medium">Cart</span></div>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 11: ORDER DETAILS -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">11. ORDER DETAILS</span>
+            <span class="text-slate-500">Tracking & Receipt</span>
+          </div>
+          <div id="artboard-order-details" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <!-- App Bar -->
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <button class="w-8 h-8 rounded-lg bg-[#F7F9F7] flex items-center justify-center text-[#172B27]">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <div>
+                  <span class="text-xs font-bold text-[#172B27] block">Order #MC-2026-8942</span>
+                  <span class="text-[10px] text-[#71817B]">Placed Today, 10:24 PM</span>
+                </div>
+              </div>
+              <button class="text-xs font-bold text-[#087E6B]">Invoice 📄</button>
+            </div>
+
+            <div class="artboard-content px-4 py-3 space-y-3">
+              
+              <!-- Clean 4-Stage Progress Tracker -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs space-y-3">
+                <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider block">Fulfillment Status</span>
+                
+                <div class="space-y-3 text-xs">
+                  <!-- Stage 1: Done -->
+                  <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-[#087E6B] text-white flex items-center justify-center text-xs font-bold shrink-0">✓</div>
+                    <div>
+                      <h5 class="font-bold text-[#172B27]">Order Confirmed</h5>
+                      <p class="text-[10px] text-[#71817B]">Validated by backend API (10:24 PM)</p>
+                    </div>
+                  </div>
+                  <!-- Line -->
+                  <div class="ml-3 w-0.5 h-3 bg-[#087E6B]"></div>
+                  <!-- Stage 2: Active -->
+                  <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-[#DDF1EA] border-2 border-[#087E6B] text-[#087E6B] flex items-center justify-center text-xs font-bold shrink-0 animate-pulse">●</div>
+                    <div>
+                      <h5 class="font-bold text-[#087E6B]">Dispensing & Packing</h5>
+                      <p class="text-[10px] text-[#71817B]">Pharmacist checking batch & expiry</p>
+                    </div>
+                  </div>
+                  <div class="ml-3 w-0.5 h-3 bg-[#E5ECE8]"></div>
+                  <!-- Stage 3: Future -->
+                  <div class="flex items-start gap-3 opacity-50">
+                    <div class="w-6 h-6 rounded-full bg-[#F7F9F7] border border-[#E5ECE8] text-[#71817B] flex items-center justify-center text-xs font-bold shrink-0">3</div>
+                    <div>
+                      <h5 class="font-bold text-[#172B27]">Out for Delivery</h5>
+                      <p class="text-[10px] text-[#71817B]">Assigned to delivery agent</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ordered Items List -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs space-y-2">
+                <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider block">Items in this Package (2)</span>
+                
+                <div class="flex justify-between items-center py-1.5 border-b border-[#F7F9F7] text-xs">
+                  <div>
+                    <span class="font-bold text-[#172B27]">Paracare 650mg Tablets</span>
+                    <span class="text-[10px] text-[#71817B] block">Strip of 15 • Qty: 2</span>
+                  </div>
+                  <span class="font-bold text-[#172B27]">₹68.00</span>
+                </div>
+
+                <div class="flex justify-between items-center py-1.5 text-xs">
+                  <div>
+                    <span class="font-bold text-[#172B27]">AyurTulsi Cough Relief Syrup</span>
+                    <span class="text-[10px] text-[#71817B] block">100 ml • Qty: 1</span>
+                  </div>
+                  <span class="font-bold text-[#172B27]">₹85.00</span>
+                </div>
+              </div>
+
+              <!-- Delivery Address -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs">
+                <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider block mb-1">Delivered To</span>
+                <p class="text-xs font-semibold text-[#172B27]">Sahil Kumar • +91 98765 43210</p>
+                <p class="text-[11px] text-[#71817B] mt-0.5">Flat 402, Shanti Vihar, Indiranagar, Bengaluru - 560038</p>
+              </div>
+
+              <!-- Support Button -->
+              <button class="w-full py-2.5 bg-white border border-[#E5ECE8] text-[#172B27] font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5">
+                <span>💬 Need Help with this Order?</span>
+              </button>
+
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- ARTBOARD 12: PROFILE & SETTINGS -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-semibold px-2">
+            <span class="text-emerald-400 font-mono">12. PROFILE & SETTINGS</span>
+            <span class="text-slate-500">Account</span>
+          </div>
+          <div id="artboard-profile" class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span>
+              <div class="camera-punch"></div>
+              <span>🔋 98%</span>
+            </div>
+
+            <!-- App Bar -->
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] flex items-center justify-between">
+              <span class="text-base font-bold text-[#172B27]">My Account</span>
+              <span class="text-xs font-bold text-[#087E6B]">Edit</span>
+            </div>
+
+            <div class="artboard-content px-4 py-4 space-y-4">
+              
+              <!-- User Info Card -->
+              <div class="bg-white p-4 rounded-2xl border border-[#E5ECE8] flex items-center gap-3.5 shadow-xs">
+                <div class="w-14 h-14 rounded-full bg-[#087E6B] text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-[#087E6B]/20">
+                  SK
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-[#172B27]">Sahil Kumar</h3>
+                  <p class="text-xs font-medium text-[#71817B]">+91 98765 43210</p>
+                  <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-[#DDF1EA] text-[#087E6B]">Verified Account</span>
+                </div>
+              </div>
+
+              <!-- Language Selection Card (English / Hindi Requirement) -->
+              <div class="bg-white p-3.5 rounded-xl border border-[#E5ECE8] shadow-xs">
+                <span class="text-[10px] font-bold text-[#71817B] uppercase tracking-wider block mb-2">Preferred Language</span>
+                <div class="grid grid-cols-2 gap-2">
+                  <button class="py-2 px-3 rounded-lg bg-[#087E6B] text-white text-xs font-bold shadow-xs flex items-center justify-center gap-1.5">
+                    <span>✓</span> English
+                  </button>
+                  <button class="py-2 px-3 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] text-[#172B27] text-xs font-medium hover:bg-white flex items-center justify-center">
+                    हिन्दी (Hindi)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Menu Items Group -->
+              <div class="bg-white rounded-xl border border-[#E5ECE8] divide-y divide-[#E5ECE8] shadow-xs">
+                <div class="p-3 flex items-center justify-between text-xs cursor-pointer hover:bg-[#F7F9F7]">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">📍</span>
+                    <span class="font-semibold text-[#172B27]">Saved Delivery Addresses</span>
+                  </div>
+                  <span class="text-[#71817B] font-mono">2 saved →</span>
+                </div>
+                <div class="p-3 flex items-center justify-between text-xs cursor-pointer hover:bg-[#F7F9F7]">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">📦</span>
+                    <span class="font-semibold text-[#172B27]">All Orders & Invoices</span>
+                  </div>
+                  <span class="text-[#71817B] font-mono">4 orders →</span>
+                </div>
+                <div class="p-3 flex items-center justify-between text-xs cursor-pointer hover:bg-[#F7F9F7]">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">🔔</span>
+                    <span class="font-semibold text-[#172B27]">Order Notifications & SMS</span>
+                  </div>
+                  <span class="text-[#16865B] font-bold text-[11px]">Enabled</span>
+                </div>
+                <div class="p-3 flex items-center justify-between text-xs cursor-pointer hover:bg-[#F7F9F7]">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-base">🛡️</span>
+                    <span class="font-semibold text-[#172B27]">Terms & E-Pharmacy Compliance</span>
+                  </div>
+                  <span class="text-[#71817B]">→</span>
+                </div>
+              </div>
+
+              <!-- Logout Button -->
+              <button class="w-full py-3 rounded-xl bg-white border border-[#D64B4B]/30 text-[#D64B4B] font-bold text-xs hover:bg-red-50 transition-colors shadow-2xs">
+                Log Out of Account
+              </button>
+
+              <div class="text-center">
+                <span class="text-[10px] text-[#71817B]">MediCart Android App • Version 2.4.0 (Build 2026.11)</span>
+              </div>
+
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="bg-white border-t border-[#E5ECE8] px-4 py-2 flex justify-around items-center">
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">🏠</span><span class="text-[10px] font-medium">Home</span></div>
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">📑</span><span class="text-[10px] font-medium">Catalogue</span></div>
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">📦</span><span class="text-[10px] font-medium">Orders</span></div>
+              <div class="flex flex-col items-center text-[#71817B]"><span class="text-sm">🛍️</span><span class="text-[10px] font-medium">Cart</span></div>
+            </div>
+
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW 2: 11 IMPORTANT APPLICATION STATES & EDGE CASES -->
+    <div id="view-states" class="hidden space-y-10">
+      <div class="max-w-7xl mx-auto flex items-end justify-between border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-2xl font-bold text-white tracking-tight">11 Important Application States & Failure Handling</h2>
+          <p class="text-sm text-slate-400 mt-1">Robust UX patterns for network drops, stock restrictions, batch expiry, PIN validation, and empty lists.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
+        
+        <!-- State 1: Empty Cart -->
+        <div class="space-y-2">
+          <span class="text-xs font-mono font-bold text-emerald-400">STATE 1: EMPTY CART</span>
+          <div class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span><div class="camera-punch"></div><span>🔋 98%</span>
+            </div>
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] font-bold text-sm text-[#172B27]">Shopping Cart</div>
+            <div class="artboard-content p-6 flex flex-col items-center justify-center text-center">
+              <div class="w-20 h-20 rounded-full bg-[#DDF1EA] flex items-center justify-center text-3xl mb-4">🛒</div>
+              <h3 class="text-base font-bold text-[#172B27]">Your Cart is Empty</h3>
+              <p class="text-xs text-[#71817B] mt-1.5 max-w-[220px]">You have no medicines or health items added to your basket yet.</p>
+              <button class="mt-6 px-6 py-2.5 rounded-xl bg-[#087E6B] text-white font-bold text-xs shadow-md shadow-[#087E6B]/20">
+                Explore Medicines
+              </button>
+            </div>
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- State 2: Empty Search Results -->
+        <div class="space-y-2">
+          <span class="text-xs font-mono font-bold text-emerald-400">STATE 2: EMPTY SEARCH</span>
+          <div class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span><div class="camera-punch"></div><span>🔋 98%</span>
+            </div>
+            <div class="bg-white px-4 py-2 border-b border-[#E5ECE8]">
+              <input type="text" value="Azithroxyz 999mg" class="w-full h-9 px-3 rounded-lg bg-[#F7F9F7] text-xs font-semibold text-[#172B27]">
+            </div>
+            <div class="artboard-content p-6 flex flex-col items-center justify-center text-center">
+              <div class="w-20 h-20 rounded-full bg-[#F7F9F7] border border-[#E5ECE8] flex items-center justify-center text-3xl mb-4">🔍</div>
+              <h3 class="text-base font-bold text-[#172B27]">No Medicines Found</h3>
+              <p class="text-xs text-[#71817B] mt-1.5 max-w-[240px]">We couldn't find any products matching "Azithroxyz 999mg". Check your spelling or browse categories.</p>
+              <button class="mt-6 px-5 py-2.5 rounded-xl bg-[#087E6B] text-white font-bold text-xs">
+                Browse All Categories
+              </button>
+            </div>
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- State 3: Loading Skeleton -->
+        <div class="space-y-2">
+          <span class="text-xs font-mono font-bold text-emerald-400">STATE 3: LOADING SKELETON</span>
+          <div class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span><div class="camera-punch"></div><span>🔋 98%</span>
+            </div>
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg skeleton-box"></div>
+              <div class="w-32 h-4 rounded skeleton-box"></div>
+            </div>
+            <div class="artboard-content p-4 space-y-4">
+              <div class="w-full h-36 rounded-2xl skeleton-box"></div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] space-y-2">
+                  <div class="w-full h-24 rounded-lg skeleton-box"></div>
+                  <div class="w-20 h-3 rounded skeleton-box"></div>
+                  <div class="w-14 h-4 rounded skeleton-box"></div>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-[#E5ECE8] space-y-2">
+                  <div class="w-full h-24 rounded-lg skeleton-box"></div>
+                  <div class="w-20 h-3 rounded skeleton-box"></div>
+                  <div class="w-14 h-4 rounded skeleton-box"></div>
+                </div>
+              </div>
+            </div>
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- State 4: Product Out of Stock -->
+        <div class="space-y-2">
+          <span class="text-xs font-mono font-bold text-amber-400">STATE 4: OUT OF STOCK</span>
+          <div class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span><div class="camera-punch"></div><span>🔋 98%</span>
+            </div>
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] font-bold text-sm text-[#172B27]">Product Details</div>
+            <div class="artboard-content p-4 space-y-4">
+              <div class="w-full h-44 rounded-2xl bg-white border border-[#E5ECE8] flex items-center justify-center text-5xl relative opacity-60">
+                😷
+                <span class="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold bg-[#E49A32] text-white">Out of Stock</span>
+              </div>
+              <div class="bg-white p-4 rounded-xl border border-[#E5ECE8] space-y-2">
+                <span class="text-xs font-bold text-[#E49A32]">⚠️ Temporarily Unavailable</span>
+                <h3 class="text-sm font-bold text-[#172B27]">N95 Healthcare Respirator Mask</h3>
+                <p class="text-xs text-[#71817B]">This product is currently out of stock at your local dispensary hub.</p>
+              </div>
+              <div class="bg-[#F7F9F7] p-3 rounded-xl border border-[#E5ECE8] text-xs text-[#71817B]">
+                We expect restock within 2 business days.
+              </div>
+            </div>
+            <div class="bg-white p-3 border-t border-[#E5ECE8]">
+              <button class="w-full h-11 bg-slate-300 text-slate-500 font-bold text-xs rounded-xl cursor-not-allowed">
+                Out of Stock • Notify Me
+              </button>
+            </div>
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- State 5: Product Expired -->
+        <div class="space-y-2">
+          <span class="text-xs font-mono font-bold text-red-400">STATE 5: PRODUCT EXPIRED</span>
+          <div class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span><div class="camera-punch"></div><span>🔋 98%</span>
+            </div>
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] font-bold text-sm text-[#172B27]">Safety Check</div>
+            <div class="artboard-content p-4 space-y-4">
+              <div class="p-4 rounded-xl bg-red-50 border border-[#D64B4B] space-y-2">
+                <div class="flex items-center gap-2 text-[#D64B4B] font-bold text-xs">
+                  <span>🛑</span>
+                  <span>Batch Expired - Sale Blocked</span>
+                </div>
+                <p class="text-xs text-[#172B27]">ColdRelief Syrup (Batch #CR-881) expired in Aug 2026. For customer safety, MediCart automatically prohibits purchasing expired stock.</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl border border-[#E5ECE8] space-y-2">
+                <h4 class="text-xs font-bold text-[#172B27]">Alternative Safe In-Stock Items:</h4>
+                <div class="p-2.5 rounded-lg bg-[#F7F9F7] border border-[#E5ECE8] flex items-center justify-between text-xs">
+                  <span>AyurTulsi Herbal Syrup (Exp: 2028)</span>
+                  <strong class="text-[#087E6B]">₹85 →</strong>
+                </div>
+              </div>
+            </div>
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- State 6: Invalid PIN Code -->
+        <div class="space-y-2">
+          <span class="text-xs font-mono font-bold text-red-400">STATE 6: INVALID PIN CODE</span>
+          <div class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span><div class="camera-punch"></div><span>🔋 98%</span>
+            </div>
+            <div class="bg-white px-4 py-3 border-b border-[#E5ECE8] font-bold text-sm text-[#172B27]">Address Validation</div>
+            <div class="artboard-content p-4 space-y-4">
+              <div class="bg-white p-4 rounded-xl border border-[#E5ECE8] space-y-3">
+                <label class="block text-xs font-bold text-[#172B27]">6-Digit Indian PIN Code</label>
+                <div class="relative">
+                  <input type="text" value="5600" class="w-full h-10 px-3 rounded-lg border-2 border-[#D64B4B] bg-red-50/30 text-xs font-bold text-[#D64B4B]">
+                  <span class="text-xs text-[#D64B4B] absolute right-3 top-3">✕</span>
+                </div>
+                <div class="p-2.5 rounded-lg bg-red-50 text-[11px] text-[#D64B4B] font-medium leading-tight">
+                  ⚠️ Please enter a complete 6-digit Indian postal PIN code (e.g., 560038).
+                </div>
+              </div>
+            </div>
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- State 7: Network Unavailable -->
+        <div class="space-y-2">
+          <span class="text-xs font-mono font-bold text-red-400">STATE 7: NETWORK OFFLINE</span>
+          <div class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span><div class="camera-punch"></div><span>🔋 98%</span>
+            </div>
+            <!-- Offline Red Banner -->
+            <div class="bg-[#D64B4B] text-white text-[11px] py-1.5 px-3 text-center font-bold">
+              📡 No Internet Connection Detected
+            </div>
+            <div class="artboard-content p-6 flex flex-col items-center justify-center text-center">
+              <div class="w-20 h-20 rounded-full bg-red-50 text-[#D64B4B] flex items-center justify-center text-3xl mb-4">📶</div>
+              <h3 class="text-base font-bold text-[#172B27]">You're Offline</h3>
+              <p class="text-xs text-[#71817B] mt-1.5 max-w-[240px]">MediCart needs an active internet connection to verify medicine stock and process orders.</p>
+              <button class="mt-6 px-6 py-2.5 rounded-xl bg-[#087E6B] text-white font-bold text-xs shadow-md shadow-[#087E6B]/20">
+                🔄 Check Connection & Retry
+              </button>
+            </div>
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+        <!-- State 8: Order Submission Failed -->
+        <div class="space-y-2">
+          <span class="text-xs font-mono font-bold text-red-400">STATE 8: ORDER SUBMISSION FAILED</span>
+          <div class="artboard-frame bg-[#F7F9F7]">
+            <div class="h-11 px-6 pt-3 flex justify-between items-center text-xs text-[#172B27] font-semibold">
+              <span>9:41</span><div class="camera-punch"></div><span>🔋 98%</span>
+            </div>
+            <div class="artboard-content p-6 flex flex-col items-center justify-center text-center">
+              <div class="w-20 h-20 rounded-full bg-red-100 text-[#D64B4B] flex items-center justify-center text-3xl mb-4">✕</div>
+              <span class="px-2 py-0.5 rounded bg-red-100 text-[#D64B4B] text-[10px] font-bold uppercase mb-2">Backend Gateway Error</span>
+              <h3 class="text-base font-bold text-[#172B27]">Order Could Not Be Placed</h3>
+              <p class="text-xs text-[#71817B] mt-1.5 max-w-[240px]">We could not complete your order due to a temporary dispatch node failure. <strong>No money was charged.</strong></p>
+              <div class="p-3 rounded-xl bg-white border border-[#E5ECE8] w-full text-left text-xs my-4">
+                <span class="text-[#71817B] text-[10px] block">Safe State Preservation:</span>
+                <span class="font-bold text-[#172B27]">All 2 items remain preserved in your cart.</span>
+              </div>
+              <button class="w-full h-11 bg-[#087E6B] text-white font-bold text-xs rounded-xl shadow-md">
+                Try Placing Order Again
+              </button>
+            </div>
+            <div class="android-nav-pill"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW 3: LIVE INTERACTIVE PROTOTYPE SIMULATOR -->
+    <div id="view-interactive" class="hidden space-y-6">
+      <div class="max-w-4xl mx-auto flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-xl font-bold text-white">Interactive Android Device Simulator</h2>
+          <p class="text-xs text-slate-400">Click anywhere or use the screen step selector to simulate the full patient journey.</p>
+        </div>
+        <!-- Screen Step Picker -->
+        <select id="interactive-screen-select" onchange="loadSimulatorScreen(this.value)" class="bg-slate-800 text-white text-xs px-3 py-2 rounded-lg border border-slate-700">
+          <option value="artboard-splash">Step 0: Splash Screen</option>
+          <option value="artboard-login">Step 1: Login</option>
+          <option value="artboard-otp">Step 2: OTP Verification</option>
+          <option value="artboard-home" selected>Step 3: Home Dashboard</option>
+          <option value="artboard-catalogue">Step 4: Medicine Catalogue</option>
+          <option value="artboard-product">Step 5: Product Details</option>
+          <option value="artboard-cart">Step 6: Shopping Cart</option>
+          <option value="artboard-address">Step 7: Delivery Address</option>
+          <option value="artboard-checkout">Step 8: Checkout & Payment</option>
+          <option value="artboard-confirmation">Step 9: Order Confirmation</option>
+          <option value="artboard-history">Step 10: Order History</option>
+          <option value="artboard-order-details">Step 11: Order Details</option>
+          <option value="artboard-profile">Step 12: Profile & Language</option>
+        </select>
+      </div>
+
+      <div class="flex justify-center py-6">
+        <div id="simulator-target" class="transition-all duration-300">
+          <!-- Dynamically cloned active artboard here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: DESIGN SYSTEM SPECIFICATION & JETPACK COMPOSE TOKENS -->
+    <div id="view-design-system" class="hidden max-w-6xl mx-auto space-y-10">
+      
+      <!-- Brand & Tokens Summary -->
+      <div class="bg-slate-950 p-8 rounded-3xl border border-slate-800 space-y-6">
+        <div>
+          <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">Design System Foundation</span>
+          <h2 class="text-2xl font-extrabold text-white mt-1">MediCart Emerald Design System (M3)</h2>
+          <p class="text-sm text-slate-400 mt-1">Specially engineered for Indian healthcare e-commerce. Compliant with Material Design 3 guidelines.</p>
+        </div>
+
+        <!-- Color Swatches Grid -->
+        <div>
+          <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Color Tokens & Jetpack Compose Values</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#087E6B] shadow-inner"></div>
+              <div class="text-xs font-bold text-white">Primary Emerald</div>
+              <div class="text-[11px] font-mono text-emerald-400">#087E6B</div>
+              <div class="text-[10px] text-slate-400">Color(0xFF087E6B)</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#075B4F] shadow-inner"></div>
+              <div class="text-xs font-bold text-white">Primary Dark</div>
+              <div class="text-[11px] font-mono text-emerald-400">#075B4F</div>
+              <div class="text-[10px] text-slate-400">Color(0xFF075B4F)</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#DDF1EA] shadow-inner"></div>
+              <div class="text-xs font-bold text-white">Secondary Mint</div>
+              <div class="text-[11px] font-mono text-emerald-400">#DDF1EA</div>
+              <div class="text-[10px] text-slate-400">Color(0xFFDDF1EA)</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#F7F9F7] border border-slate-700 shadow-inner"></div>
+              <div class="text-xs font-bold text-white">App Background</div>
+              <div class="text-[11px] font-mono text-emerald-400">#F7F9F7</div>
+              <div class="text-[10px] text-slate-400">Color(0xFFF7F9F7)</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#172B27] shadow-inner"></div>
+              <div class="text-xs font-bold text-white">Primary Text</div>
+              <div class="text-[11px] font-mono text-emerald-400">#172B27</div>
+              <div class="text-[10px] text-slate-400">Color(0xFF172B27)</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#71817B] shadow-inner"></div>
+              <div class="text-xs font-bold text-white">Secondary Text</div>
+              <div class="text-[11px] font-mono text-emerald-400">#71817B</div>
+              <div class="text-[10px] text-slate-400">Color(0xFF71817B)</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#E5ECE8] shadow-inner"></div>
+              <div class="text-xs font-bold text-white">Border Neutral</div>
+              <div class="text-[11px] font-mono text-emerald-400">#E5ECE8</div>
+              <div class="text-[10px] text-slate-400">Color(0xFFE5ECE8)</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#16865B] shadow-inner"></div>
+              <div class="text-xs font-bold text-white">Success Green</div>
+              <div class="text-[11px] font-mono text-emerald-400">#16865B</div>
+              <div class="text-[10px] text-slate-400">Color(0xFF16865B)</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#E49A32] shadow-inner"></div>
+              <div class="text-xs font-bold text-white">Warning Amber</div>
+              <div class="text-[11px] font-mono text-emerald-400">#E49A32</div>
+              <div class="text-[10px] text-slate-400">Color(0xFFE49A32)</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="w-full h-14 rounded-lg bg-[#D64B4B] shadow-inner"></div>
+              <div class="text-xs font-bold text-white">Error Crimson</div>
+              <div class="text-[11px] font-mono text-emerald-400">#D64B4B</div>
+              <div class="text-[10px] text-slate-400">Color(0xFFD64B4B)</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Typography & 8dp Grid Rules -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800">
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Typography Scale (Sp / Px)</h3>
+            <ul class="text-xs space-y-2 text-slate-400">
+              <li class="flex justify-between"><strong class="text-white">Headline Large:</strong> <span>24sp / Bold (Leading 32sp)</span></li>
+              <li class="flex justify-between"><strong class="text-white">Headline Medium:</strong> <span>20sp / Bold (Leading 28sp)</span></li>
+              <li class="flex justify-between"><strong class="text-white">Title Medium:</strong> <span>16sp / SemiBold (Leading 24sp)</span></li>
+              <li class="flex justify-between"><strong class="text-white">Body Large:</strong> <span>14sp / Medium (Leading 20sp)</span></li>
+              <li class="flex justify-between"><strong class="text-white">Body Small:</strong> <span>12sp / Regular (Minimum Floor)</span></li>
+              <li class="flex justify-between"><strong class="text-white">Caption / Tag:</strong> <span>10-11sp / Bold Uppercase</span></li>
+            </ul>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">8dp Spacing System</h3>
+            <ul class="text-xs space-y-2 text-slate-400">
+              <li class="flex justify-between"><strong class="text-white">Screen Margins:</strong> <span>16dp (Horizontal padding)</span></li>
+              <li class="flex justify-between"><strong class="text-white">Card Internal Padding:</strong> <span>12dp - 16dp</span></li>
+              <li class="flex justify-between"><strong class="text-white">Component Gaps:</strong> <span>8dp, 12dp, 16dp, 24dp</span></li>
+              <li class="flex justify-between"><strong class="text-white">Corner Radius:</strong> <span>12dp (Cards), 16dp (Modals), 24dp (Sheets)</span></li>
+              <li class="flex justify-between"><strong class="text-white">Touch Target Floor:</strong> <span>48dp minimum for all buttons</span></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let currentZoom = 0.8;
+    function updateZoom() {
+      const canvas = document.getElementById('zoom-canvas');
+      if (canvas) {
+        canvas.style.transform = `scale(${currentZoom})`;
+      }
+      document.getElementById('zoom-level').innerText = `${Math.round(currentZoom * 100)}%`;
+    }
+    function zoomIn() {
+      if (currentZoom < 1.2) {
+        currentZoom += 0.1;
+        updateZoom();
+      }
+    }
+    function zoomOut() {
+      if (currentZoom > 0.4) {
+        currentZoom -= 0.1;
+        updateZoom();
+      }
+    }
+    function resetZoom() {
+      currentZoom = 1.0;
+      updateZoom();
+    }
+
+    // View Switching
+    function switchView(viewName) {
+      document.getElementById('view-artboards').classList.add('hidden');
+      document.getElementById('view-states').classList.add('hidden');
+      document.getElementById('view-interactive').classList.add('hidden');
+      document.getElementById('view-design-system').classList.add('hidden');
+
+      document.querySelectorAll('#tab-artboards, #tab-states, #tab-interactive, #tab-design-system').forEach(b => {
+        b.className = 'px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white';
+      });
+
+      document.getElementById(`view-${viewName}`).classList.remove('hidden');
+      document.getElementById(`tab-${viewName}`).className = 'px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-[#087E6B] text-white shadow-sm';
+
+      if (viewName === 'interactive') {
+        loadSimulatorScreen(document.getElementById('interactive-screen-select').value);
+      }
+    }
+
+    function loadSimulatorScreen(screenId) {
+      const source = document.getElementById(screenId);
+      const target = document.getElementById('simulator-target');
+      if (source && target) {
+        target.innerHTML = '';
+        const clone = source.cloneNode(true);
+        clone.id = 'simulator-screen-clone';
+        target.appendChild(clone);
+      }
+    }
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      updateZoom();
+      loadSimulatorScreen('artboard-home');
+    });
+  </script>
+</body>
+</html>
