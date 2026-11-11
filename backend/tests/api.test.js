@@ -9,7 +9,7 @@ const { PRODUCTS_DATA } = require('../src/scripts/seed');
 
 setupTestDB();
 
-describe('MediCart REST API Acceptance Test Suite (20 Tests)', () => {
+describe('MediCart REST API Acceptance Test Suite (22 Tests)', () => {
   let userToken;
   let userBToken;
   let userId;
@@ -369,5 +369,65 @@ describe('MediCart REST API Acceptance Test Suite (20 Tests)', () => {
 
     const prodAfter = await Product.findOne({ productId: 'med_06' });
     expect(prodAfter.stockCount).toBe(originalStock - 2);
+  });
+
+  // 21. Multi-Item Concurrency & Partial Failure Rollback
+  test('21. Multi-item order failure rolls back previously reserved inventory cleanly', async () => {
+    const prodValidBefore = await Product.findOne({ productId: 'med_05' });
+    const originalValidStock = prodValidBefore.stockCount;
+
+    // med_05 is in stock (8), med_07 is out-of-stock (0)
+    const res = await request(app)
+      .post('/api/orders')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({
+        addressId: userAddressId,
+        items: [
+          { productId: 'med_05', quantity: 1 },
+          { productId: 'med_07', quantity: 1 }
+        ],
+        paymentMethod: 'UPI_DEMO'
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+
+    // Verify med_05 stock was completely preserved/restored and not leaked
+    const prodValidAfter = await Product.findOne({ productId: 'med_05' });
+    expect(prodValidAfter.stockCount).toBe(originalValidStock);
+  });
+
+  // 22. Rapid Concurrent Duplicate Checkout Protection
+  test('22. Rapid concurrent requests with identical idempotencyKey produce exactly 1 order', async () => {
+    const concurrentKey = `rapid_key_${Date.now()}`;
+    const prodBefore = await Product.findOne({ productId: 'med_02' });
+    const stockBefore = prodBefore.stockCount;
+
+    // Fire 3 simultaneous checkout requests
+    const promises = [1, 2, 3].map(() =>
+      request(app)
+        .post('/api/orders')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          addressId: userAddressId,
+          items: [{ productId: 'med_02', quantity: 1 }],
+          paymentMethod: 'UPI_DEMO',
+          idempotencyKey: concurrentKey
+        })
+    );
+
+    const results = await Promise.all(promises);
+    results.forEach(r => {
+      expect([200, 201]).toContain(r.status);
+      expect(r.body.success).toBe(true);
+    });
+
+    // Exactly one order in DB
+    const matchingCount = await Order.countDocuments({ idempotencyKey: concurrentKey });
+    expect(matchingCount).toBe(1);
+
+    // Stock decremented by exactly 1 unit
+    const prodAfter = await Product.findOne({ productId: 'med_02' });
+    expect(prodAfter.stockCount).toBe(stockBefore - 1);
   });
 });

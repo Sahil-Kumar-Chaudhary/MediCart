@@ -163,6 +163,15 @@ const createOrder = async (userId, orderData) => {
         { $inc: { stockCount: dec.quantity }, isAvailable: true }
       );
     }
+
+    // If a concurrent request created the order with this idempotencyKey, return that existing order
+    if (error.code === 11000 && idempotencyKey) {
+      const existingOrder = await Order.findOne({ idempotencyKey: idempotencyKey.trim() });
+      if (existingOrder) {
+        return { order: existingOrder, isDuplicate: true };
+      }
+    }
+
     error.statusCode = error.statusCode || 400;
     error.errorCode = error.errorCode || 'ORDER_CREATION_FAILED';
     throw error;

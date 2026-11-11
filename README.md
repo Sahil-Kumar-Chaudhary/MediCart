@@ -131,29 +131,99 @@ app/src/main/java/com/medicart/app/
 
 ---
 
-## 6. How to View the Artboards & Interactive Simulator
+## 6. Full-Stack Architecture & Offline Synchronization
 
-Open the interactive suite directly in your browser:
-```bash
-# Path to Interactive Artboard Suite
-ui-artboards/index.html
+```
++-------------------------------------------------------------------------+
+|                        Android Client (CPH2333)                        |
+|                                                                         |
+|  [Jetpack Compose UI (Emerald Green)] <---> [ViewModels (StateFlow)]   |
+|                                                        |                |
+|                                          [PharmacyRepository]           |
+|                                           /                 \           |
+|             (Network Available)          /                   \ (Offline)|
+|                                         v                     v         |
+|                             [Retrofit 2 + OkHttp]     [SQLite Cache]    |
+|                             [EncryptedSharedPrefs]    (MediCartDatabase)|
++----------------------------------------|--------------------------------+
+                                         | HTTP/REST (Port 5000)
+                                         v
++-------------------------------------------------------------------------+
+|                        Node.js / Express Server                         |
+|                                                                         |
+|  [Rate Limiter] -> [Helmet] -> [Auth Middleware (JWT)] -> [Zod Validator]|
+|                                         |                               |
+|                                  [Controllers]                          |
+|                                         |                               |
+|                                  [Services Layer]                       |
+|                          (Atomic Decrement & Rollback)                  |
+|                                         |                               |
+|                                [Mongoose ODM]                           |
++-----------------------------------------|-------------------------------+
+                                          v
+                              [MongoDB Database Engine]
 ```
 
-Or view the individual 393 × 852 PNG artboards inside `artboards/`:
-- `screen_00_splash.png`
-- `screen_01_login.png`
-- `screen_02_otp.png`
-- `screen_03_home.png`
-- `screen_04_catalogue.png`
-- `screen_05_product.png`
-- `screen_06_cart.png`
-- `screen_07_address.png`
-- `screen_08_checkout.png`
-- `screen_09_confirmation.png`
-- `screen_10_history.png`
-- `screen_11_order_details.png`
-- `screen_12_profile.png`
-- `state_empty_cart.png`
-- `state_empty_search.png`
-- `state_out_of_stock.png`
-- `state_network_offline.png`
+### Key Technical Capabilities:
+- **Offline First:** Catalogue browsing and cart modifications are cached locally in SQLite (`MediCartDatabaseHelper`).
+- **Hardware Encryption:** User tokens and phone numbers are encrypted with Android Jetpack Security `EncryptedSharedPreferences` backed by AES-256 GCM hardware Keystore.
+- **Dynamic Networking:** Auto-detects QEMU emulator (`10.0.2.2`) vs physical Android devices (`127.0.0.1` via `adb reverse tcp:5000 tcp:5000`).
+- **Atomic Order Processing:** Inventory is decremented atomically; if any item in a multi-item cart fails validation, the system rolls back all reserved stock cleanly.
+- **Idempotency Protection:** Unique `idempotencyKey` prevents duplicate checkout submissions and double-billing on network retries or rapid button clicks.
+
+---
+
+## 7. Quality Assurance & Test Verification
+
+| Test Layer | Framework | Coverage | Count | Status |
+| :--- | :--- | :--- | :---: | :---: |
+| **Android Domain Logic** | JUnit 4 + Kotlin | Pricing, Fee rules, Max qty, PIN validation | 10 | **PASS** |
+| **Android Network & Retrofit** | MockWebServer + JUnit 4 | Interceptors, Token injection, Offline fallback | 20 | **PASS** |
+| **Backend REST API** | Jest + Supertest | Auth, Catalogue, Address isolation, Orders, Rollback | 22 | **PASS** |
+| **Physical Hardware Live E2E**| Real Device (CPH2333) | Complete 25-step purchasing journey | 25 | **PASS** |
+| **TOTAL** | — | — | **77** | **100% PASS** |
+
+- **Live Hardware Milestone:** Verified on Android 13 (`CPH2333`) creating live backend order reference **`#MC-2026-2368`** with idempotency key `bb249f71-f58d-43f2-9b20-56b9a64b7103`.
+
+---
+
+## 8. Build, Run & Testing Instructions
+
+### Backend Server (Node.js & Express)
+```bash
+cd backend
+npm install
+npm test       # Run 22 Jest acceptance tests
+npm start      # Launch server on http://localhost:5000 (auto-seeded with 20 Indian medicines)
+```
+
+### Android Client (Kotlin & Jetpack Compose)
+```bash
+# Run 30 Android unit and integration tests
+.\gradlew.bat testDebugUnitTest
+
+# Assemble clean Debug APK
+.\gradlew.bat assembleDebug
+
+# Output APK: app/build/outputs/apk/debug/app-debug.apk (19.43 MB)
+```
+
+### Physical Device Deployment
+```bash
+# Forward port 5000 to the connected phone
+adb reverse tcp:5000 tcp:5000
+
+# Install APK to device
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+---
+
+## 9. Submission Package & Artifacts
+
+All formal submission materials are organized in the [`submission/`](submission/) directory:
+- 📑 **Technical Report:** [`submission/reports/TECHNICAL_REPORT.md`](submission/reports/TECHNICAL_REPORT.md)
+- 🎬 **Video Demo Script:** [`submission/demo/DEMO_SCRIPT.md`](submission/demo/DEMO_SCRIPT.md)
+- 📱 **Physical Device Screenshots:** [`submission/screenshots/`](submission/screenshots/)
+- 📦 **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk` (19.43 MB)
+
