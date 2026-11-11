@@ -17,5 +17,10 @@ captures
 *.hprof
 *.orig
 .env
+*.env
+node_modules/
+backend/node_modules/
+backend/coverage/
+backend/.env
 *.keystore
 *.jks
