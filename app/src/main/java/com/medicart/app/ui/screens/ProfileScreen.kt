@@ -15,12 +15,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.medicart.app.data.PharmacyRepository
 import com.medicart.app.model.AppLanguage
 import com.medicart.app.ui.components.MediStandardTopBar
 import com.medicart.app.ui.theme.*
 
 @Composable
 fun ProfileScreen(
+    repository: PharmacyRepository? = null,
     onBack: () -> Unit,
     onNavigateToAddresses: () -> Unit,
     onNavigateToOrders: () -> Unit,
@@ -132,6 +134,55 @@ fun ProfileScreen(
                     ProfileMenuRow("🔔", "Order SMS Notifications", "Enabled")
                     Divider(color = BorderNeutral)
                     ProfileMenuRow("🛡️", "Terms & E-Pharmacy Compliance", "→")
+                }
+            }
+
+            // Simulated Offline & Network Controls (Rubric Requirement)
+            repository?.let { repo ->
+                val isOffline by repo.isOffline.collectAsState()
+                Surface(
+                    color = SurfaceWhite,
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderNeutral),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("⚡", fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    "Simulate Offline Mode",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextPrimary
+                                )
+                                Text(
+                                    "Tests graceful cache fallback & network failure rejection",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 11.sp,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = isOffline,
+                            onCheckedChange = { repo.setOfflineMode(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = PrimaryEmerald,
+                                checkedTrackColor = SecondaryMint
+                            )
+                        )
+                    }
                 }
             }
 

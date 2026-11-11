@@ -1,5 +1,8 @@
 package com.medicart.app.data
 
+import android.content.Context
+import com.medicart.app.data.local.MediCartDatabaseHelper
+import com.medicart.app.data.local.SecureSessionManager
 import com.medicart.app.model.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -7,10 +10,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Production-ready mock pharmacy repository.
- * Emulates backend network requests, inventory validation, stock rules and order persistence.
+ * Production-ready pharmacy repository implementing [PharmacyRepository].
+ * Backed by SQLite persistent storage and Jetpack Security EncryptedSharedPreferences.
+ * Supports offline mode simulation, network failure resilience, and strict inventory validation.
  */
-class MockPharmacyRepository {
+class MockPharmacyRepository(
+    private val context: Context? = null
+) : PharmacyRepository {
+
+    private val dbHelper: MediCartDatabaseHelper? = context?.let { MediCartDatabaseHelper(it) }
+    private val sessionManager: SecureSessionManager? = context?.let { SecureSessionManager(it) }
 
     private val categories = listOf(
         Category("cat_pain", "Pain Relief", "💊", 42),
@@ -160,7 +169,7 @@ class MockPharmacyRepository {
         isDefault = true
     )
 
-    private val initialOrders = mutableListOf(
+    private val initialOrders = listOf(
         Order(
             orderReference = "#MC-2026-7810",
             createdAt = "05 Nov 2026, 04:12 PM",
@@ -187,53 +196,120 @@ class MockPharmacyRepository {
     )
 
     // Reactive State
-    private val _isAuthenticated = MutableStateFlow(false)
-    val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
+    private val _isAuthenticated = MutableStateFlow(sessionManager?.isAuthenticated ?: false)
+    override val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
 
-    fun verifyOtp(mobileNumber: String, otp: String): Boolean {
-        // Requires 6-digit code
+    private val _isOffline = MutableStateFlow(false)
+    override val isOffline: StateFlow<Boolean> = _isOffline.asStateFlow()
+
+    private val _currentAddress = MutableStateFlow(defaultAddress)
+    override val currentAddress: StateFlow<DeliveryAddress> = _currentAddress.asStateFlow()
+
+    private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
+    override val cartItems: StateFlow<List<CartItem>> = _cartItems.asStateFlow()
+
+    private val _orders = MutableStateFlow<List<Order>>(emptyList())
+    override val orders: StateFlow<List<Order>> = _orders.asStateFlow()
+
+    init {
+        // Initialize SQLite persistence if available
+        if (dbHelper != null) {
+            val existingProducts = dbHelper.getAllProducts()
+            if (existingProducts.isEmpty()) {
+                dbHelper.saveProducts(initialProducts)
+            }
+
+            val savedAddresses = dbHelper.getAddresses()
+            if (savedAddresses.isEmpty()) {
+                dbHelper.saveAddress(defaultAddress)
+                _currentAddress.value = defaultAddress
+            } else {
+                _currentAddress.value = savedAddresses.firstOrNull { it.isDefault } ?: savedAddresses.first()
+            }
+
+            val savedCart = dbHelper.getCart()
+            if (savedCart.isEmpty()) {
+                // Seed initial demo cart items
+                val initialCart = listOf(
+                    CartItem(initialProducts[0], 2),
+                    CartItem(initialProducts[2], 1)
+                )
+                dbHelper.saveCart(initialCart)
+                _cartItems.value = initialCart
+            } else {
+                _cartItems.value = savedCart
+            }
+
+            val savedOrders = dbHelper.getAllOrders()
+            if (savedOrders.isEmpty()) {
+                for (o in initialOrders) {
+                    dbHelper.insertOrder(o)
+                }
+                _orders.value = initialOrders
+            } else {
+                _orders.value = savedOrders
+            }
+        } else {
+            // In-memory test environment fallback
+            _cartItems.value = listOf(
+                CartItem(initialProducts[0], 2),
+                CartItem(initialProducts[2], 1)
+            )
+            _orders.value = initialOrders
+        }
+    }
+
+    override fun setOfflineMode(offline: Boolean) {
+        _isOffline.value = offline
+    }
+
+    override suspend fun verifyOtp(mobileNumber: String, otp: String): Result<Boolean> {
+        delay(300) // Simulate auth verification latency
         if (otp.length == 6 && otp.all { it.isDigit() }) {
             _isAuthenticated.value = true
-            return true
+            sessionManager?.saveSession(mobileNumber, "jwt_simulated_${System.currentTimeMillis()}")
+            return Result.success(true)
         }
-        return false
+        return Result.failure(IllegalArgumentException("Invalid 6-digit OTP code."))
     }
 
-    fun logout() {
+    override suspend fun logout() {
         _isAuthenticated.value = false
+        sessionManager?.clearSession()
     }
 
-    private val _cartItems = MutableStateFlow<List<CartItem>>(
-        listOf(
-            CartItem(initialProducts[0], 2), // Paracare 650
-            CartItem(initialProducts[2], 1)  // AyurTulsi
-        )
-    )
-    val cartItems: StateFlow<List<CartItem>> = _cartItems.asStateFlow()
+    override fun getCategories(): List<Category> = categories
 
-    private val _orders = MutableStateFlow<List<Order>>(initialOrders)
-    val orders: StateFlow<List<Order>> = _orders.asStateFlow()
+    override suspend fun getProducts(searchQuery: String, categoryId: String?): Result<List<Product>> {
+        delay(200) // Emulate network roundtrip
+        val source = if (dbHelper != null) {
+            val dbProducts = dbHelper.getAllProducts()
+            if (dbProducts.isNotEmpty()) dbProducts else initialProducts
+        } else {
+            initialProducts
+        }
 
-    fun getCategories(): List<Category> = categories
-
-    suspend fun getProducts(searchQuery: String = "", categoryId: String? = null): List<Product> {
-        delay(200) // Simulate fast network roundtrip
-        return initialProducts.filter { product ->
+        val filtered = source.filter { product ->
             val matchesQuery = searchQuery.isBlank() ||
                     product.name.contains(searchQuery, ignoreCase = true) ||
                     product.genericName.contains(searchQuery, ignoreCase = true)
             val matchesCategory = categoryId == null || product.categoryId == categoryId
             matchesQuery && matchesCategory
         }
+        return Result.success(filtered)
     }
 
-    suspend fun getProductById(id: String): Product? {
+    override suspend fun getProductById(id: String): Result<Product?> {
         delay(100)
-        return initialProducts.find { it.id == id }
+        val product = if (dbHelper != null) {
+            dbHelper.getProductById(id) ?: initialProducts.find { it.id == id }
+        } else {
+            initialProducts.find { it.id == id }
+        }
+        return Result.success(product)
     }
 
-    // Cart Operations with business validation
-    fun addToCart(product: Product, quantity: Int = 1): Result<Unit> {
+    override fun addToCart(product: Product, quantity: Int): Result<Unit> {
         if (!product.isAvailable) {
             return Result.failure(IllegalStateException("Cannot add out of stock or expired item."))
         }
@@ -252,10 +328,11 @@ class MockPharmacyRepository {
             current.add(CartItem(product, quantity))
         }
         _cartItems.value = current
+        dbHelper?.saveCart(current)
         return Result.success(Unit)
     }
 
-    fun updateCartQuantity(productId: String, newQuantity: Int) {
+    override fun updateCartQuantity(productId: String, newQuantity: Int): Result<Unit> {
         val current = _cartItems.value.toMutableList()
         val index = current.indexOfFirst { it.product.id == productId }
         if (index >= 0) {
@@ -263,21 +340,40 @@ class MockPharmacyRepository {
                 current.removeAt(index)
             } else if (newQuantity <= 5) {
                 current[index] = current[index].copy(quantity = newQuantity)
+            } else {
+                return Result.failure(IllegalArgumentException("Maximum limit of 5 packs per order reached."))
             }
             _cartItems.value = current
+            dbHelper?.saveCart(current)
+            return Result.success(Unit)
         }
+        return Result.failure(NoSuchElementException("Product not found in cart."))
     }
 
-    fun clearCart() {
+    override fun clearCart() {
         _cartItems.value = emptyList()
+        dbHelper?.clearCart()
     }
 
-    // Order Placement (simulated backend call)
-    suspend fun submitOrder(
+    override fun updateAddress(address: DeliveryAddress) {
+        _currentAddress.value = address
+        dbHelper?.saveAddress(address)
+    }
+
+    override fun getDefaultAddress(): DeliveryAddress = _currentAddress.value
+
+    override suspend fun submitOrder(
         address: DeliveryAddress,
         paymentMethod: PaymentMethod
     ): Result<Order> {
-        delay(800) // Emulate real backend database transaction
+        delay(800) // Emulate network roundtrip and backend processing
+
+        // Check offline resilience
+        if (_isOffline.value) {
+            return Result.failure(
+                IllegalStateException("Network is currently offline. Order cannot be placed without server confirmation.")
+            )
+        }
 
         val currentCart = _cartItems.value
         if (currentCart.isEmpty()) {
@@ -301,12 +397,13 @@ class MockPharmacyRepository {
             status = OrderStatus.PROCESSING
         )
 
-        // Persist order in history and clear cart
+        // Persist order in local database and memory
         _orders.value = listOf(newOrder) + _orders.value
-        _cartItems.value = emptyList()
+        dbHelper?.insertOrder(newOrder)
+
+        // Clear cart after confirmed submission
+        clearCart()
 
         return Result.success(newOrder)
     }
-
-    fun getDefaultAddress(): DeliveryAddress = defaultAddress
 }

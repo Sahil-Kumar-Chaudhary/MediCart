@@ -14,7 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medicart.app.data.MockPharmacyRepository
+import com.medicart.app.data.PharmacyRepository
 import com.medicart.app.model.Order
 import com.medicart.app.ui.components.MediStandardTopBar
 import com.medicart.app.ui.components.StatusBadge
@@ -23,7 +23,7 @@ import com.medicart.app.ui.theme.*
 @Composable
 fun OrderDetailScreen(
     orderRef: String,
-    repository: MockPharmacyRepository,
+    repository: PharmacyRepository,
     onBack: () -> Unit
 ) {
     val orders by repository.orders.collectAsState()

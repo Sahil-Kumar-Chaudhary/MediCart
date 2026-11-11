@@ -18,17 +18,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medicart.app.data.MockPharmacyRepository
+import com.medicart.app.data.PharmacyRepository
 import com.medicart.app.model.Product
 import com.medicart.app.ui.components.EmptyStateView
 import com.medicart.app.ui.components.MediBottomNavBar
 import com.medicart.app.ui.components.MediStandardTopBar
+import com.medicart.app.ui.components.OfflineBanner
 import com.medicart.app.ui.components.QuantityStepper
 import com.medicart.app.ui.theme.*
 
 @Composable
 fun CatalogueScreen(
-    repository: MockPharmacyRepository,
+    repository: PharmacyRepository,
     onBack: () -> Unit,
     onNavigateToProduct: (String) -> Unit,
     onNavigateToHome: () -> Unit,
@@ -39,15 +40,22 @@ fun CatalogueScreen(
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var products by remember { mutableStateOf<List<Product>>(emptyList()) }
     val cartItems by repository.cartItems.collectAsState()
+    val isOffline by repository.isOffline.collectAsState()
 
-    LaunchedEffect(searchQuery, selectedCategory) {
-        products = repository.getProducts(searchQuery, selectedCategory)
+    LaunchedEffect(searchQuery, selectedCategory, isOffline) {
+        val result = repository.getProducts(searchQuery, selectedCategory)
+        products = result.getOrDefault(emptyList())
     }
 
     Scaffold(
         containerColor = AppBackground,
         topBar = {
-            Surface(
+            Column {
+                OfflineBanner(
+                    isOffline = isOffline,
+                    onReconnect = { repository.setOfflineMode(false) }
+                )
+                Surface(
                 color = SurfaceWhite,
                 shadowElevation = 1.dp
             ) {
@@ -135,8 +143,9 @@ fun CatalogueScreen(
                     }
                 }
             }
-        },
-        bottomBar = {
+        }
+    },
+    bottomBar = {
             MediBottomNavBar(
                 currentRoute = "catalogue",
                 cartBadgeCount = cartItems.sumOf { it.quantity },

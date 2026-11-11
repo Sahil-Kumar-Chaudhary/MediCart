@@ -22,15 +22,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medicart.app.data.MockPharmacyRepository
+import com.medicart.app.data.PharmacyRepository
 import com.medicart.app.model.Category
 import com.medicart.app.model.Product
 import com.medicart.app.ui.components.MediBottomNavBar
+import com.medicart.app.ui.components.OfflineBanner
 import com.medicart.app.ui.theme.*
 
 @Composable
 fun HomeScreen(
-    repository: MockPharmacyRepository,
+    repository: PharmacyRepository,
     onNavigateToCatalogue: () -> Unit,
     onNavigateToProduct: (String) -> Unit,
     onNavigateToCart: () -> Unit,
@@ -40,24 +41,31 @@ fun HomeScreen(
     val categories = remember { repository.getCategories() }
     var featuredProducts by remember { mutableStateOf<List<Product>>(emptyList()) }
     val cartItems by repository.cartItems.collectAsState()
+    val isOffline by repository.isOffline.collectAsState()
 
-    LaunchedEffect(Unit) {
-        featuredProducts = repository.getProducts().take(4)
+    LaunchedEffect(isOffline) {
+        val result = repository.getProducts()
+        featuredProducts = result.getOrDefault(emptyList()).take(4)
     }
 
     Scaffold(
         containerColor = AppBackground,
         topBar = {
-            Surface(
-                color = SurfaceWhite,
-                shadowElevation = 1.dp
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+            Column {
+                OfflineBanner(
+                    isOffline = isOffline,
+                    onReconnect = { repository.setOfflineMode(false) }
+                )
+                Surface(
+                    color = SurfaceWhite,
+                    shadowElevation = 1.dp
                 ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
                     // Top Bar: Location & Avatar
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -144,8 +152,9 @@ fun HomeScreen(
                     }
                 }
             }
-        },
-        bottomBar = {
+        }
+    },
+    bottomBar = {
             MediBottomNavBar(
                 currentRoute = "home",
                 cartBadgeCount = cartItems.sumOf { it.quantity },

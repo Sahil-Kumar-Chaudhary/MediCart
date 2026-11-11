@@ -4,16 +4,18 @@ import androidx.compose.runtime.*
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.medicart.app.data.MockPharmacyRepository
+import com.medicart.app.data.PharmacyRepository
 import com.medicart.app.model.DeliveryAddress
 import com.medicart.app.ui.screens.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun MediCartNavGraph(
     navController: NavHostController,
-    repository: MockPharmacyRepository
+    repository: PharmacyRepository
 ) {
     var activeAddress by remember { mutableStateOf(repository.getDefaultAddress()) }
+    val scope = rememberCoroutineScope()
 
     NavHost(
         navController = navController,
@@ -45,9 +47,11 @@ fun MediCartNavGraph(
                 mobileNumber = mobile,
                 onBack = { navController.popBackStack() },
                 onVerified = {
-                    repository.verifyOtp(mobile, "487210")
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                    scope.launch {
+                        repository.verifyOtp(mobile, "487210")
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
                     }
                 }
             )
@@ -157,13 +161,16 @@ fun MediCartNavGraph(
 
         composable(Screen.Profile.route) {
             ProfileScreen(
+                repository = repository,
                 onBack = { navController.popBackStack() },
                 onNavigateToAddresses = { navController.navigate(Screen.Address.route) },
                 onNavigateToOrders = { navController.navigate(Screen.OrderHistory.route) },
                 onLogout = {
-                    repository.logout()
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
+                    scope.launch {
+                        repository.logout()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 }
             )

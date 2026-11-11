@@ -13,7 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medicart.app.data.MockPharmacyRepository
+import com.medicart.app.data.PharmacyRepository
 import com.medicart.app.model.Product
 import com.medicart.app.ui.components.MediStandardTopBar
 import com.medicart.app.ui.components.PrimaryButton
@@ -23,7 +23,7 @@ import com.medicart.app.ui.theme.*
 @Composable
 fun ProductDetailScreen(
     productId: String,
-    repository: MockPharmacyRepository,
+    repository: PharmacyRepository,
     onBack: () -> Unit,
     onNavigateToCart: () -> Unit
 ) {
@@ -31,7 +31,8 @@ fun ProductDetailScreen(
     var selectedQty by remember { mutableStateOf(1) }
 
     LaunchedEffect(productId) {
-        product = repository.getProductById(productId)
+        val result = repository.getProductById(productId)
+        product = result.getOrNull()
     }
 
     Scaffold(

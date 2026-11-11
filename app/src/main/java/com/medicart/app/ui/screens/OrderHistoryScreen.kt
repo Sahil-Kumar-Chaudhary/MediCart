@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.medicart.app.data.MockPharmacyRepository
+import com.medicart.app.data.PharmacyRepository
 import com.medicart.app.model.OrderStatus
 import com.medicart.app.ui.components.EmptyStateView
 import com.medicart.app.ui.components.MediBottomNavBar
@@ -23,7 +23,7 @@ import com.medicart.app.ui.theme.*
 
 @Composable
 fun OrderHistoryScreen(
-    repository: MockPharmacyRepository,
+    repository: PharmacyRepository,
     onNavigateToDetail: (String) -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToCatalogue: () -> Unit,
