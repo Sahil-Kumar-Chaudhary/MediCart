@@ -42,11 +42,19 @@ class AuthViewModel(
         }
         _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                isOtpSent = true
-            )
-            onSuccess(mobile)
+            val result = repository.requestOtp(mobile)
+            result.onSuccess {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isOtpSent = true
+                )
+                onSuccess(mobile)
+            }.onFailure { error ->
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = error.message ?: "Failed to request OTP. Please try again."
+                )
+            }
         }
     }
 

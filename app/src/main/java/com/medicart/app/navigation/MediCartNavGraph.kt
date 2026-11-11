@@ -36,7 +36,10 @@ fun MediCartNavGraph(
         composable(Screen.Login.route) {
             LoginScreen(
                 onContinue = { mobile ->
-                    navController.navigate(Screen.Otp.createRoute(mobile))
+                    scope.launch {
+                        repository.requestOtp(mobile)
+                        navController.navigate(Screen.Otp.createRoute(mobile))
+                    }
                 }
             )
         }
@@ -48,9 +51,11 @@ fun MediCartNavGraph(
                 onBack = { navController.popBackStack() },
                 onVerified = {
                     scope.launch {
-                        repository.verifyOtp(mobile, "487210")
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
+                        val result = repository.verifyOtp(mobile, "487210")
+                        result.onSuccess {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
                         }
                     }
                 }

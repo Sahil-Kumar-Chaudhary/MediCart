@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Domain interface for MediCart Pharmacy operations.
- * Decouples presentation from data sources and persistence.
+ * Decouples presentation from data sources, local SQLite persistence and remote Retrofit APIs.
  */
 interface PharmacyRepository {
     val isAuthenticated: StateFlow<Boolean>
@@ -15,6 +15,7 @@ interface PharmacyRepository {
     val currentAddress: StateFlow<DeliveryAddress>
 
     fun setOfflineMode(offline: Boolean)
+    suspend fun requestOtp(mobileNumber: String): Result<String> = Result.success("487210")
     suspend fun verifyOtp(mobileNumber: String, otp: String): Result<Boolean>
     suspend fun logout()
 
@@ -28,9 +29,14 @@ interface PharmacyRepository {
 
     fun updateAddress(address: DeliveryAddress)
     fun getDefaultAddress(): DeliveryAddress
+    suspend fun fetchAddresses(): Result<List<DeliveryAddress>> = Result.success(listOf(getDefaultAddress()))
+    suspend fun deleteAddress(addressId: String): Result<Unit> = Result.success(Unit)
 
     suspend fun submitOrder(
         address: DeliveryAddress,
         paymentMethod: PaymentMethod
     ): Result<Order>
+
+    suspend fun fetchOrders(): Result<List<Order>> = Result.success(orders.value)
+    suspend fun getOrderById(orderRef: String): Result<Order?> = Result.success(orders.value.find { it.orderReference == orderRef })
 }

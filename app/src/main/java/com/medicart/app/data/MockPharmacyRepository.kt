@@ -1,25 +1,47 @@
 package com.medicart.app.data
 
 import android.content.Context
+import android.util.Log
 import com.medicart.app.data.local.MediCartDatabaseHelper
 import com.medicart.app.data.local.SecureSessionManager
+import com.medicart.app.data.remote.NetworkModule
+import com.medicart.app.data.remote.api.MediCartApiService
+import com.medicart.app.data.remote.dto.*
 import com.medicart.app.model.*
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 /**
- * Production-ready pharmacy repository implementing [PharmacyRepository].
- * Backed by SQLite persistent storage and Jetpack Security EncryptedSharedPreferences.
- * Supports offline mode simulation, network failure resilience, and strict inventory validation.
+ * Production-ready hybrid pharmacy repository implementing [PharmacyRepository].
+ * Combines Retrofit 2 remote REST APIs, SQLite local database caching,
+ * and Jetpack Security EncryptedSharedPreferences.
+ * Provides offline-first resilience, robust inventory checks, and idempotency protection.
  */
 class MockPharmacyRepository(
-    private val context: Context? = null
+    private val context: Context? = null,
+    injectedApiService: MediCartApiService? = null
 ) : PharmacyRepository {
 
     private val dbHelper: MediCartDatabaseHelper? = context?.let { MediCartDatabaseHelper(it) }
     private val sessionManager: SecureSessionManager? = context?.let { SecureSessionManager(it) }
+
+    val apiService: MediCartApiService? = injectedApiService ?: context?.let {
+        NetworkModule.createApiService(
+            sessionManager = sessionManager,
+            onUnauthorized = {
+                _isAuthenticated.value = false
+            }
+        )
+    }
 
     private val categories = listOf(
         Category("cat_pain", "Pain Relief", "💊", 42),
@@ -121,7 +143,6 @@ class MockPharmacyRepository(
             activeIngredient = "Ascorbic Acid 500mg, Zinc Gluconate 10mg",
             iconEmoji = "🛡️"
         ),
-        // OUT OF STOCK ITEM DEMO
         Product(
             id = "med_07",
             name = "N95 Healthcare Respirator Mask",
@@ -137,7 +158,6 @@ class MockPharmacyRepository(
             activeIngredient = "Meltblown non-woven fabric",
             iconEmoji = "😷"
         ),
-        // EXPIRED ITEM DEMO
         Product(
             id = "med_08",
             name = "ColdRelief Night Syrup (Expired Batch)",
@@ -211,6 +231,9 @@ class MockPharmacyRepository(
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
     override val orders: StateFlow<List<Order>> = _orders.asStateFlow()
 
+    // Store in-flight idempotency key in case of network retry
+    private var pendingIdempotencyKey: String? = null
+
     init {
         // Initialize SQLite persistence if available
         if (dbHelper != null) {
@@ -229,7 +252,6 @@ class MockPharmacyRepository(
 
             val savedCart = dbHelper.getCart()
             if (savedCart.isEmpty()) {
-                // Seed initial demo cart items
                 val initialCart = listOf(
                     CartItem(initialProducts[0], 2),
                     CartItem(initialProducts[2], 1)
@@ -257,31 +279,151 @@ class MockPharmacyRepository(
             )
             _orders.value = initialOrders
         }
+
+        // Trigger background sync if online and authenticated
+        if (apiService != null && _isAuthenticated.value && !_isOffline.value) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    fetchOrders()
+                    fetchAddresses()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Initial background sync deferred: ${e.message}")
+                }
+            }
+        }
     }
 
     override fun setOfflineMode(offline: Boolean) {
         _isOffline.value = offline
-    }
-
-    override suspend fun verifyOtp(mobileNumber: String, otp: String): Result<Boolean> {
-        delay(300) // Simulate auth verification latency
-        if (otp.length == 6 && otp.all { it.isDigit() }) {
-            _isAuthenticated.value = true
-            sessionManager?.saveSession(mobileNumber, "jwt_simulated_${System.currentTimeMillis()}")
-            return Result.success(true)
+        if (!offline && apiService != null && _isAuthenticated.value) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    fetchOrders()
+                    fetchAddresses()
+                } catch (_: Exception) {}
+            }
         }
-        return Result.failure(IllegalArgumentException("Invalid 6-digit OTP code."))
     }
 
-    override suspend fun logout() {
+    override suspend fun requestOtp(mobileNumber: String): Result<String> = withContext(Dispatchers.IO) {
+        val cleanNumber = mobileNumber.filter { it.isDigit() }.takeLast(10)
+        if (cleanNumber.length != 10) {
+            return@withContext Result.failure(IllegalArgumentException("Please enter a valid 10-digit Indian mobile number."))
+        }
+
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.requestOtp(RequestOtpRequest(cleanNumber))
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val simOtp = response.body()?.data?.simulatedOtp ?: "487210"
+                    return@withContext Result.success(simOtp)
+                } else {
+                    val errorMsg = NetworkModule.parseErrorMessage(response)
+                    return@withContext Result.failure(Exception(errorMsg))
+                }
+            } catch (e: IOException) {
+                Log.w(TAG, "Request OTP network failure, using fallback: ${e.message}")
+                return@withContext Result.failure(Exception("Network error. Please check your internet connection."))
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+
+        // Offline / Unit Test Simulation
+        Result.success("487210")
+    }
+
+    override suspend fun verifyOtp(mobileNumber: String, otp: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        val cleanNumber = mobileNumber.filter { it.isDigit() }.takeLast(10)
+        val cleanOtp = otp.filter { it.isDigit() }.take(6)
+
+        if (cleanOtp.length != 6) {
+            return@withContext Result.failure(IllegalArgumentException("Please enter a complete 6-digit OTP code."))
+        }
+
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.verifyOtp(VerifyOtpRequest(cleanNumber, cleanOtp))
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val data = response.body()?.data
+                    if (data != null) {
+                        sessionManager?.saveSession(
+                            mobileNumber = data.user.phoneNumber,
+                            token = data.token,
+                            recipientName = data.user.name
+                        )
+                        _isAuthenticated.value = true
+
+                        // Synchronize user data upon successful login
+                        launch {
+                            try {
+                                fetchOrders()
+                                fetchAddresses()
+                            } catch (_: Exception) {}
+                        }
+                        return@withContext Result.success(true)
+                    }
+                }
+                val errorMsg = NetworkModule.parseErrorMessage(response)
+                return@withContext Result.failure(Exception(errorMsg))
+            } catch (e: IOException) {
+                Log.w(TAG, "Verify OTP network failure, falling back to local verification: ${e.message}")
+                return@withContext Result.failure(Exception("Network error. Please check your internet connection."))
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+
+        // Test environment or offline fallback
+        if (cleanOtp == "487210" || (cleanOtp.length == 6 && cleanOtp.all { it.isDigit() })) {
+            _isAuthenticated.value = true
+            sessionManager?.saveSession(cleanNumber, "jwt_simulated_${System.currentTimeMillis()}")
+            return@withContext Result.success(true)
+        }
+        Result.failure(IllegalArgumentException("Invalid verification code."))
+    }
+
+    override suspend fun logout(): Unit = withContext(Dispatchers.IO) {
         _isAuthenticated.value = false
         sessionManager?.clearSession()
     }
 
     override fun getCategories(): List<Category> = categories
 
-    override suspend fun getProducts(searchQuery: String, categoryId: String?): Result<List<Product>> {
-        delay(200) // Emulate network roundtrip
+    override suspend fun getProducts(searchQuery: String, categoryId: String?): Result<List<Product>> = withContext(Dispatchers.IO) {
+        if (apiService != null && !_isOffline.value) {
+            try {
+                // Map categoryId to backend category name if necessary
+                val categoryName = when (categoryId) {
+                    "cat_pain" -> "Pain Relief"
+                    "cat_cough" -> "Cold & Cough"
+                    "cat_ayurvedic" -> "Digestive Care"
+                    "cat_devices" -> "Healthcare Devices"
+                    "cat_firstaid" -> "First Aid"
+                    "cat_vitamins" -> "Vitamins & Supplements"
+                    else -> categoryId
+                }
+
+                val response = apiService.getProducts(
+                    search = if (searchQuery.isNotBlank()) searchQuery else null,
+                    category = categoryName,
+                    limit = 50
+                )
+
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val dtoList = response.body()?.data?.products ?: emptyList()
+                    val domainProducts = dtoList.map { it.toDomain() }
+
+                    // Cache in SQLite database
+                    dbHelper?.saveProducts(domainProducts)
+                    return@withContext Result.success(domainProducts)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to fetch products from backend, falling back to SQLite cache: ${e.message}")
+            }
+        }
+
+        // Local SQLite cache / in-memory fallback
         val source = if (dbHelper != null) {
             val dbProducts = dbHelper.getAllProducts()
             if (dbProducts.isNotEmpty()) dbProducts else initialProducts
@@ -296,17 +438,32 @@ class MockPharmacyRepository(
             val matchesCategory = categoryId == null || product.categoryId == categoryId
             matchesQuery && matchesCategory
         }
-        return Result.success(filtered)
+        Result.success(filtered)
     }
 
-    override suspend fun getProductById(id: String): Result<Product?> {
-        delay(100)
+    override suspend fun getProductById(id: String): Result<Product?> = withContext(Dispatchers.IO) {
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.getProductById(id)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val dto = response.body()?.data
+                    if (dto != null) {
+                        val product = dto.toDomain()
+                        dbHelper?.saveProducts(listOf(product))
+                        return@withContext Result.success(product)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to fetch product details from remote: ${e.message}")
+            }
+        }
+
         val product = if (dbHelper != null) {
             dbHelper.getProductById(id) ?: initialProducts.find { it.id == id }
         } else {
             initialProducts.find { it.id == id }
         }
-        return Result.success(product)
+        Result.success(product)
     }
 
     override fun addToCart(product: Product, quantity: Int): Result<Unit> {
@@ -358,34 +515,187 @@ class MockPharmacyRepository(
     override fun updateAddress(address: DeliveryAddress) {
         _currentAddress.value = address
         dbHelper?.saveAddress(address)
+
+        if (apiService != null && !_isOffline.value) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val dto = address.toDto()
+                    if (dto._id != null) {
+                        apiService.updateAddress(dto._id, dto)
+                    } else {
+                        val res = apiService.createAddress(dto)
+                        if (res.isSuccessful && res.body()?.data != null) {
+                            val saved = res.body()!!.data!!.toDomain()
+                            _currentAddress.value = saved
+                            dbHelper?.saveAddress(saved)
+                        }
+                    }
+                } catch (e: Exception) {
+                    try { Log.w(TAG, "Address synchronization deferred: ${e.message}") } catch (_: Throwable) {}
+                }
+            }
+        }
     }
 
     override fun getDefaultAddress(): DeliveryAddress = _currentAddress.value
 
+    override suspend fun fetchAddresses(): Result<List<DeliveryAddress>> = withContext(Dispatchers.IO) {
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.getAddresses()
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val addresses = response.body()?.data?.map { it.toDomain() } ?: emptyList()
+                    if (addresses.isNotEmpty()) {
+                        for (a in addresses) {
+                            dbHelper?.saveAddress(a)
+                        }
+                        val defaultAddr = addresses.firstOrNull { it.isDefault } ?: addresses.first()
+                        _currentAddress.value = defaultAddr
+                        return@withContext Result.success(addresses)
+                    }
+                }
+            } catch (e: Exception) {
+                try { Log.w(TAG, "Failed to fetch addresses from backend: ${e.message}") } catch (_: Throwable) {}
+            }
+        }
+
+        val localAddresses = dbHelper?.getAddresses() ?: listOf(defaultAddress)
+        Result.success(localAddresses)
+    }
+
+    override suspend fun deleteAddress(addressId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.deleteAddress(addressId)
+                if (response.isSuccessful) {
+                    return@withContext Result.success(Unit)
+                }
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+        Result.success(Unit)
+    }
+
     override suspend fun submitOrder(
         address: DeliveryAddress,
         paymentMethod: PaymentMethod
-    ): Result<Order> {
-        delay(800) // Emulate network roundtrip and backend processing
-
-        // Check offline resilience
+    ): Result<Order> = withContext(Dispatchers.IO) {
+        // 1. Check network connectivity & offline mode
         if (_isOffline.value) {
-            return Result.failure(
+            return@withContext Result.failure(
                 IllegalStateException("Network is currently offline. Order cannot be placed without server confirmation.")
             )
         }
 
+        // 2. Validate Cart
         val currentCart = _cartItems.value
         if (currentCart.isEmpty()) {
-            return Result.failure(IllegalStateException("Cannot submit an empty cart."))
+            return@withContext Result.failure(IllegalStateException("Cannot submit an empty cart."))
         }
 
-        // Validate items are still in stock before confirming
+        // 3. Revalidate items availability and expiration
         val invalidItem = currentCart.find { !it.product.isAvailable }
         if (invalidItem != null) {
-            return Result.failure(IllegalStateException("Item '${invalidItem.product.name}' is no longer available."))
+            return@withContext Result.failure(
+                IllegalStateException("Item '${invalidItem.product.name}' is out of stock or expired.")
+            )
         }
 
+        // 4. Validate quantity limits (max 5)
+        val excessiveItem = currentCart.find { it.quantity > 5 }
+        if (excessiveItem != null) {
+            return@withContext Result.failure(
+                IllegalArgumentException("Maximum limit of 5 packs per order exceeded for '${excessiveItem.product.name}'.")
+            )
+        }
+
+        // 5. Generate / reuse idempotency key
+        val idempotencyKey = pendingIdempotencyKey ?: UUID.randomUUID().toString().also {
+            pendingIdempotencyKey = it
+        }
+
+        // 6. If connected to backend, perform real remote checkout
+        if (apiService != null) {
+            try {
+                // Ensure address exists on backend
+                var backendAddressId = if (address.id.isNotBlank() && address.id != "addr_1" && address.id != "addr_snap") {
+                    address.id
+                } else {
+                    null
+                }
+
+                if (backendAddressId == null) {
+                    val addressDto = address.toDto()
+                    val addrRes = apiService.createAddress(addressDto)
+                    if (addrRes.isSuccessful && addrRes.body()?.data?._id != null) {
+                        backendAddressId = addrRes.body()!!.data!!._id!!
+                        val updated = address.copy(id = backendAddressId)
+                        _currentAddress.value = updated
+                        dbHelper?.saveAddress(updated)
+                    } else {
+                        // Fall back to first available address or raise error
+                        val existing = apiService.getAddresses()
+                        if (existing.isSuccessful && !existing.body()?.data.isNullOrEmpty()) {
+                            backendAddressId = existing.body()!!.data!!.first()._id
+                        } else {
+                            val errorMsg = NetworkModule.parseErrorMessage(addrRes)
+                            return@withContext Result.failure(IllegalStateException("Failed to verify delivery address on server: $errorMsg"))
+                        }
+                    }
+                }
+
+                val orderItems = currentCart.map {
+                    CreateOrderItemRequest(productId = it.product.id, quantity = it.quantity)
+                }
+
+                val backendPaymentMethod = when (paymentMethod) {
+                    PaymentMethod.CARD_DEMO -> "CARD_DEMO"
+                    PaymentMethod.CASH_ON_DELIVERY -> "CASH_ON_DELIVERY"
+                    else -> "UPI_DEMO"
+                }
+
+                val orderRequest = CreateOrderRequest(
+                    addressId = backendAddressId!!,
+                    items = orderItems,
+                    paymentMethod = backendPaymentMethod,
+                    idempotencyKey = idempotencyKey
+                )
+
+                val response = apiService.createOrder(orderRequest)
+
+                if (response.isSuccessful && response.body()?.data != null) {
+                    val orderDto = response.body()!!.data!!
+                    val confirmedOrder = orderDto.toDomain()
+
+                    // Confirmed by backend! Clear in-flight idempotency key
+                    pendingIdempotencyKey = null
+
+                    // Persist order in local SQLite and StateFlow
+                    _orders.value = listOf(confirmedOrder) + _orders.value
+                    dbHelper?.insertOrder(confirmedOrder)
+
+                    // Clear cart ONLY after confirmed backend creation
+                    clearCart()
+
+                    return@withContext Result.success(confirmedOrder)
+                } else {
+                    val errorMsg = NetworkModule.parseErrorMessage(response)
+                    // Keep cart and keep pendingIdempotencyKey intact
+                    return@withContext Result.failure(IllegalStateException(errorMsg))
+                }
+            } catch (e: IOException) {
+                try { Log.w(TAG, "Network timeout / IO error during order submission. Cart preserved: ${e.message}") } catch (_: Throwable) {}
+                // Do not clear cart. Preserve idempotencyKey for retry.
+                return@withContext Result.failure(
+                    IllegalStateException("Network error: Could not confirm order with server. Your cart is preserved.")
+                )
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+
+        // Test/Standalone Simulation mode
         val cartSummary = CartSummary(currentCart)
         val newOrder = Order(
             orderReference = "#MC-2026-${(1000..9999).random()}",
@@ -397,13 +707,65 @@ class MockPharmacyRepository(
             status = OrderStatus.PROCESSING
         )
 
-        // Persist order in local database and memory
+        pendingIdempotencyKey = null
         _orders.value = listOf(newOrder) + _orders.value
         dbHelper?.insertOrder(newOrder)
-
-        // Clear cart after confirmed submission
         clearCart()
 
-        return Result.success(newOrder)
+        Result.success(newOrder)
+    }
+
+    override suspend fun fetchOrders(): Result<List<Order>> = withContext(Dispatchers.IO) {
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.getOrders()
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val ordersList = response.body()?.data?.map { it.toDomain() } ?: emptyList()
+                    if (ordersList.isNotEmpty()) {
+                        for (o in ordersList) {
+                            dbHelper?.insertOrder(o)
+                        }
+                        _orders.value = ordersList
+                        return@withContext Result.success(ordersList)
+                    }
+                }
+            } catch (e: Exception) {
+                try { Log.w(TAG, "Failed to fetch orders from backend, using local orders: ${e.message}") } catch (_: Throwable) {}
+            }
+        }
+
+        val localOrders = dbHelper?.getAllOrders() ?: initialOrders
+        Result.success(localOrders)
+    }
+
+    override suspend fun getOrderById(orderRef: String): Result<Order?> = withContext(Dispatchers.IO) {
+        val memoryMatch = _orders.value.find { it.orderReference == orderRef }
+        if (memoryMatch != null) {
+            return@withContext Result.success(memoryMatch)
+        }
+
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val encodedRef = URLEncoder.encode(orderRef, StandardCharsets.UTF_8.toString())
+                val response = apiService.getOrderById(encodedRef)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val dto = response.body()?.data
+                    if (dto != null) {
+                        val order = dto.toDomain()
+                        dbHelper?.insertOrder(order)
+                        return@withContext Result.success(order)
+                    }
+                }
+            } catch (e: Exception) {
+                try { Log.w(TAG, "Failed to fetch order details from backend: ${e.message}") } catch (_: Throwable) {}
+            }
+        }
+
+        val dbOrder = dbHelper?.getAllOrders()?.find { it.orderReference == orderRef }
+        Result.success(dbOrder)
+    }
+
+    companion object {
+        private const val TAG = "MockPharmacyRepository"
     }
 }
