@@ -26,6 +26,16 @@ const requireAuth = async (req, res, next) => {
       return errorResponse(res, 401, 'User account no longer exists', 'USER_NOT_FOUND');
     }
 
+    // Check token version to invalidate sessions after password reset
+    if (decoded.tokenVersion !== undefined && decoded.tokenVersion < (user.tokenVersion || 0)) {
+      return errorResponse(
+        res,
+        401,
+        'Session has expired due to password reset. Please log in again.',
+        'SESSION_REVOKED'
+      );
+    }
+
     req.user = user;
     next();
   } catch (error) {

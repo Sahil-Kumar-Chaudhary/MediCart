@@ -20,6 +20,23 @@ const authRateLimiter = env.isTest
       }
     });
 
+const loginRateLimiter = env.isTest
+  ? (req, res, next) => next()
+  : rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 15, // Max 15 login attempts per 15 minutes per IP
+      standardHeaders: true,
+      legacyHeaders: false,
+      handler: (req, res) => {
+        return errorResponse(
+          res,
+          429,
+          'Too many login attempts. Please try again after 15 minutes.',
+          'TOO_MANY_REQUESTS'
+        );
+      }
+    });
+
 const apiRateLimiter = env.isTest
   ? (req, res, next) => next()
   : rateLimit({
@@ -37,4 +54,4 @@ const apiRateLimiter = env.isTest
       }
     });
 
-module.exports = { authRateLimiter, apiRateLimiter };
+module.exports = { authRateLimiter, loginRateLimiter, apiRateLimiter };

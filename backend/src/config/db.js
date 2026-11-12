@@ -18,7 +18,13 @@ const seedInitialDataSafely = async () => {
     const Address = require('../models/Address');
     let user = await User.findOne({ phoneNumber: env.DEMO_PHONE_NUMBER });
     if (!user) {
-      user = await User.create({ name: 'Sahil Kumar', phoneNumber: env.DEMO_PHONE_NUMBER });
+      const demoPasswordHash = await User.hashPassword('Demo@1234');
+      user = await User.create({
+        name: 'Sahil Kumar',
+        phoneNumber: env.DEMO_PHONE_NUMBER,
+        passwordHash: demoPasswordHash,
+        tokenVersion: 0
+      });
       await Address.create({
         userId: user._id,
         recipientName: 'Sahil Kumar',
@@ -31,7 +37,11 @@ const seedInitialDataSafely = async () => {
         addressType: 'HOME',
         isDefault: true
       });
-      console.log(`[Database] Initialized default demo account for ${env.DEMO_PHONE_NUMBER}.`);
+      console.log(`[Database] Initialized default demo account for ${env.DEMO_PHONE_NUMBER} with password authentication.`);
+    } else if (!user.passwordHash) {
+      user.passwordHash = await User.hashPassword('Demo@1234');
+      await user.save();
+      console.log(`[Database] Migrated existing demo account with default password hash.`);
     }
   } catch (seedError) {
     console.error('[Database Warning] Auto-seeding encounter warning:', seedError.message);
