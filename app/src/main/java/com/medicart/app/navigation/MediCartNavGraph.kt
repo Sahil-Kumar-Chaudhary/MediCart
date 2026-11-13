@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.medicart.app.data.PharmacyRepository
 import com.medicart.app.model.DeliveryAddress
 import com.medicart.app.ui.screens.*
+import com.medicart.app.ui.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -16,6 +17,8 @@ fun MediCartNavGraph(
 ) {
     var activeAddress by remember { mutableStateOf(repository.getDefaultAddress()) }
     val scope = rememberCoroutineScope()
+    val authViewModel = remember { AuthViewModel(repository) }
+    val authUiState by authViewModel.uiState.collectAsState()
 
     NavHost(
         navController = navController,
@@ -35,12 +38,151 @@ fun MediCartNavGraph(
 
         composable(Screen.Login.route) {
             LoginScreen(
-                onContinue = { mobile ->
-                    scope.launch {
-                        repository.requestOtp(mobile)
-                        navController.navigate(Screen.Otp.createRoute(mobile))
-                    }
+                mobileNumber = authUiState.loginMobileNumber,
+                password = authUiState.loginPassword,
+                rememberMe = authUiState.rememberMe,
+                isPasswordVisible = authUiState.isLoginPasswordVisible,
+                isLoading = authUiState.isLoading,
+                errorMessage = authUiState.errorMessage,
+                onMobileNumberChange = authViewModel::onLoginMobileChanged,
+                onPasswordChange = authViewModel::onLoginPasswordChanged,
+                onTogglePasswordVisibility = authViewModel::toggleLoginPasswordVisibility,
+                onToggleRememberMe = authViewModel::toggleRememberMe,
+                onLoginClick = {
+                    authViewModel.login(
+                        onSuccess = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                        }
+                    )
+                },
+                onNavigateToRegister = {
+                    authViewModel.clearFeedback()
+                    navController.navigate(Screen.Register.route)
+                },
+                onNavigateToForgotPassword = {
+                    authViewModel.clearFeedback()
+                    navController.navigate(Screen.ForgotPassword.route)
                 }
+            )
+        }
+
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                name = authUiState.registerName,
+                mobileNumber = authUiState.registerMobileNumber,
+                password = authUiState.registerPassword,
+                confirmPassword = authUiState.registerConfirmPassword,
+                termsAccepted = authUiState.registerTermsAccepted,
+                isPasswordVisible = authUiState.isRegisterPasswordVisible,
+                isConfirmPasswordVisible = authUiState.isRegisterConfirmPasswordVisible,
+                isLoading = authUiState.isLoading,
+                errorMessage = authUiState.errorMessage,
+                onNameChange = authViewModel::onRegisterNameChanged,
+                onMobileNumberChange = authViewModel::onRegisterMobileChanged,
+                onPasswordChange = authViewModel::onRegisterPasswordChanged,
+                onConfirmPasswordChange = authViewModel::onRegisterConfirmPasswordChanged,
+                onTermsAcceptedChange = authViewModel::toggleRegisterTerms,
+                onTogglePasswordVisibility = authViewModel::toggleRegisterPasswordVisibility,
+                onToggleConfirmPasswordVisibility = authViewModel::toggleRegisterConfirmPasswordVisibility,
+                onRegisterClick = {
+                    authViewModel.requestRegistrationOtp { mobile, name, password ->
+                        navController.navigate(Screen.RegisterOtp.createRoute(mobile, name, password))
+                    }
+                },
+                onNavigateToLogin = {
+                    authViewModel.clearFeedback()
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.RegisterOtp.route) { backStackEntry ->
+            val rawMobile = backStackEntry.arguments?.getString("mobile") ?: authUiState.registerMobileNumber
+            val rawName = backStackEntry.arguments?.getString("name") ?: authUiState.registerName
+            val rawPassword = backStackEntry.arguments?.getString("password") ?: authUiState.registerPassword
+            val name = try { java.net.URLDecoder.decode(rawName, "UTF-8") } catch (e: Exception) { rawName }
+            val password = try { java.net.URLDecoder.decode(rawPassword, "UTF-8") } catch (e: Exception) { rawPassword }
+
+            RegisterOtpScreen(
+                mobileNumber = rawMobile,
+                name = name,
+                isLoading = authUiState.isLoading,
+                errorMessage = authUiState.errorMessage,
+                onVerifyOtp = { otp ->
+                    authViewModel.verifyRegistrationOtp(rawMobile, name, password, otp) {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
+                },
+                onResendOtp = {
+                    authViewModel.requestRegistrationOtp { _, _, _ -> }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(
+                mobileNumber = authUiState.forgotMobileNumber,
+                isLoading = authUiState.isLoading,
+                errorMessage = authUiState.errorMessage,
+                onMobileNumberChange = authViewModel::onForgotMobileChanged,
+                onRequestResetOtp = {
+                    authViewModel.requestPasswordResetOtp { mobile ->
+                        navController.navigate(Screen.ResetPasswordOtp.createRoute(mobile))
+                    }
+                },
+                onNavigateBack = {
+                    authViewModel.clearFeedback()
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.ResetPasswordOtp.route) { backStackEntry ->
+            val mobile = backStackEntry.arguments?.getString("mobile") ?: authUiState.forgotMobileNumber
+            ResetPasswordOtpScreen(
+                mobileNumber = mobile,
+                isLoading = authUiState.isLoading,
+                errorMessage = authUiState.errorMessage,
+                onVerifyOtp = { otp ->
+                    authViewModel.clearFeedback()
+                    navController.navigate(Screen.ResetPassword.createRoute(mobile, otp))
+                },
+                onResendOtp = {
+                    authViewModel.requestPasswordResetOtp { }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.ResetPassword.route) { backStackEntry ->
+            val mobile = backStackEntry.arguments?.getString("mobile") ?: authUiState.forgotMobileNumber
+            val otp = backStackEntry.arguments?.getString("otp") ?: "487210"
+            ResetPasswordScreen(
+                mobileNumber = mobile,
+                otpCode = otp,
+                newPassword = authUiState.newPassword,
+                confirmNewPassword = authUiState.confirmNewPassword,
+                isNewPasswordVisible = authUiState.isNewPasswordVisible,
+                isConfirmNewPasswordVisible = authUiState.isConfirmNewPasswordVisible,
+                isLoading = authUiState.isLoading,
+                errorMessage = authUiState.errorMessage,
+                onNewPasswordChange = authViewModel::onNewPasswordChanged,
+                onConfirmNewPasswordChange = authViewModel::onConfirmNewPasswordChanged,
+                onToggleNewPasswordVisibility = authViewModel::toggleNewPasswordVisibility,
+                onToggleConfirmNewPasswordVisibility = authViewModel::toggleConfirmNewPasswordVisibility,
+                onResetPasswordClick = {
+                    authViewModel.resetPassword(mobile, otp) {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
+                },
+                onBack = { navController.popBackStack() }
             )
         }
 
