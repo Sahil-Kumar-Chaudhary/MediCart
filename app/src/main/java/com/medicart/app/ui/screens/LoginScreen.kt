@@ -1,15 +1,28 @@
 package com.medicart.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.medicart.app.ui.components.PrimaryButton
@@ -17,10 +30,22 @@ import com.medicart.app.ui.theme.*
 
 @Composable
 fun LoginScreen(
-    onContinue: (String) -> Unit
+    mobileNumber: String = "9876543210",
+    password: String = "",
+    rememberMe: Boolean = true,
+    isPasswordVisible: Boolean = false,
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    onMobileNumberChange: (String) -> Unit = {},
+    onPasswordChange: (String) -> Unit = {},
+    onTogglePasswordVisibility: () -> Unit = {},
+    onToggleRememberMe: () -> Unit = {},
+    onLoginClick: () -> Unit = {},
+    onNavigateToRegister: () -> Unit = {},
+    onNavigateToForgotPassword: () -> Unit = {}
 ) {
-    var mobileNumber by remember { mutableStateOf("9876543210") }
-    val isValid = mobileNumber.length == 10 && mobileNumber.all { it.isDigit() }
+    val focusManager = LocalFocusManager.current
+    val isFormValid = mobileNumber.length == 10 && password.isNotBlank()
 
     Scaffold(
         containerColor = AppBackground
@@ -29,52 +54,86 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(24.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Brand Mark
+                // Brand Header with Tagline
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Surface(
                         color = PrimaryEmerald,
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.size(36.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.size(44.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("✚", color = SurfaceWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text("✚", color = SurfaceWhite, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                         }
                     }
-                    Text(
-                        text = "MediCart",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
-                    )
+                    Column {
+                        Text(
+                            text = "MediCart",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryDark
+                        )
+                        Text(
+                            text = "Healthcare, Made Convenient.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = TextSecondary
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
                 Text(
-                    text = "Welcome to MediCart 👋",
+                    text = "Welcome Back! 👋",
                     style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Enter your Indian mobile number to access verified healthcare and medicines.",
+                    text = "Login to continue to MediCart.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
+                // Error Banner
+                if (!errorMessage.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Surface(
+                        color = ErrorRed.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(10.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, ErrorRed.copy(alpha = 0.3f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text("⚠️", fontSize = 16.sp)
+                            Text(
+                                text = errorMessage,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = ErrorRed
+                            )
+                        }
+                    }
+                }
 
-                // Input Card
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Form Container
                 Surface(
                     color = SurfaceWhite,
                     shape = RoundedCornerShape(16.dp),
@@ -82,45 +141,142 @@ fun LoginScreen(
                     shadowElevation = 1.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "MOBILE NUMBER",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = TextSecondary,
-                            letterSpacing = 1.sp
-                        )
+                    Column(
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // 1. Mobile Number Field
+                        Column {
+                            Text(
+                                text = "MOBILE NUMBER",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextSecondary,
+                                letterSpacing = 1.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Surface(
+                                    color = AppBackground,
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderNeutral)
+                                ) {
+                                    Text(
+                                        text = "🇮🇳 +91",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextPrimary,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp)
+                                    )
+                                }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                                OutlinedTextField(
+                                    value = mobileNumber,
+                                    onValueChange = { input ->
+                                        val digitsOnly = input.filter { it.isDigit() }.take(10)
+                                        onMobileNumberChange(digitsOnly)
+                                    },
+                                    placeholder = { Text("98765 43210", color = TextSecondary.copy(alpha = 0.5f)) },
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Number,
+                                        imeAction = ImeAction.Next
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                                    ),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = PrimaryEmerald,
+                                        unfocusedBorderColor = BorderNeutral
+                                    ),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Surface(
-                                color = AppBackground,
-                                shape = RoundedCornerShape(8.dp),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, BorderNeutral)
+                        // 2. Password Field
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "🇮🇳 +91",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = TextPrimary,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp)
+                                    text = "PASSWORD",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextSecondary,
+                                    letterSpacing = 1.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+
+                                Text(
+                                    text = "Forgot Password?",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = PrimaryEmerald,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.clickable { onNavigateToForgotPassword() }
                                 )
                             }
 
+                            Spacer(modifier = Modifier.height(6.dp))
+
                             OutlinedTextField(
-                                value = mobileNumber,
-                                onValueChange = { if (it.length <= 10 && it.all { c -> c.isDigit() }) mobileNumber = it },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                value = password,
+                                onValueChange = onPasswordChange,
+                                placeholder = { Text("Enter your password", color = TextSecondary.copy(alpha = 0.5f)) },
                                 singleLine = true,
-                                placeholder = { Text("98765 43210") },
+                                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    IconButton(onClick = onTogglePasswordVisibility) {
+                                        Icon(
+                                            imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            contentDescription = if (isPasswordVisible) "Hide password" else "Show password",
+                                            tint = TextSecondary
+                                        )
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password,
+                                    imeAction = ImeAction.Done
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        focusManager.clearFocus()
+                                        if (isFormValid && !isLoading) onLoginClick()
+                                    }
+                                ),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = PrimaryEmerald,
                                     unfocusedBorderColor = BorderNeutral
                                 ),
                                 shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        // 3. Remember Me Checkbox
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clickable { onToggleRememberMe() }
+                                .padding(vertical = 2.dp)
+                        ) {
+                            Checkbox(
+                                checked = rememberMe,
+                                onCheckedChange = { onToggleRememberMe() },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = PrimaryEmerald,
+                                    checkmarkColor = SurfaceWhite
+                                )
+                            )
+                            Text(
+                                text = "Remember Me",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextPrimary
                             )
                         }
                     }
@@ -128,50 +284,67 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // Primary Login Button
                 PrimaryButton(
-                    text = "Get Verification OTP",
-                    enabled = isValid,
-                    onClick = { onContinue(mobileNumber) }
+                    text = if (isLoading) "Signing In..." else "Log In",
+                    enabled = isFormValid && !isLoading,
+                    onClick = onLoginClick
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Value highlights
+                // Divider with OR
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
-                        color = SecondaryMint.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text("Verified Formulations", style = MaterialTheme.typography.labelMedium, color = PrimaryDark)
-                            Text("Safe generic items", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                        }
-                    }
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = BorderNeutral)
+                    Text(
+                        text = "OR",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(horizontal = 14.dp)
+                    )
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = BorderNeutral)
+                }
 
-                    Surface(
-                        color = SecondaryMint.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text("Fast Delivery", style = MaterialTheme.typography.labelMedium, color = PrimaryDark)
-                            Text("19,000+ PIN codes", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                        }
-                    }
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // New User Section
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Don't have an account? ",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "Create Account",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = PrimaryEmerald,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { onNavigateToRegister() }
+                    )
                 }
             }
 
-            Text(
-                text = "By continuing, you agree to MediCart's Terms of Use & Privacy Policy.",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Footer
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "By continuing, you agree to MediCart's Terms of Use & Privacy Policy.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
