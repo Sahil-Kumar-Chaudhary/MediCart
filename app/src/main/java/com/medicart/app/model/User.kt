@@ -5,6 +5,11 @@ enum class AppLanguage(val code: String, val displayName: String) {
     HINDI("hi", "हिन्दी (Hindi)")
 }
 
+data class User(
+    val name: String,
+    val phoneNumber: String
+)
+
 data class UserProfile(
     val id: String,
     val fullName: String,

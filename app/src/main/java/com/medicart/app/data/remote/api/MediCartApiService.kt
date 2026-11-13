@@ -10,7 +10,37 @@ interface MediCartApiService {
     @GET("health")
     suspend fun getHealth(): Response<Map<String, Any>>
 
-    // Authentication
+    // Authentication (Password & Registration)
+    @POST("api/auth/login")
+    suspend fun login(
+        @Body request: LoginRequest
+    ): Response<ApiResponse<LoginResponseData>>
+
+    @POST("api/auth/register/request-otp")
+    suspend fun registerRequestOtp(
+        @Body request: RegisterRequestOtpRequest
+    ): Response<ApiResponse<RequestOtpResponseData>>
+
+    @POST("api/auth/register/verify-otp")
+    suspend fun registerVerifyOtp(
+        @Body request: RegisterVerifyOtpRequest
+    ): Response<ApiResponse<VerifyOtpResponseData>>
+
+    @POST("api/auth/forgot-password/request-otp")
+    suspend fun forgotPasswordRequestOtp(
+        @Body request: ForgotPasswordRequestOtpRequest
+    ): Response<ApiResponse<RequestOtpResponseData>>
+
+    @POST("api/auth/forgot-password/reset")
+    suspend fun forgotPasswordReset(
+        @Body request: ForgotPasswordResetRequest
+    ): Response<ApiResponse<PasswordResetResponseData>>
+
+    @POST("api/auth/change-password")
+    suspend fun changePassword(
+        @Body request: ChangePasswordRequest
+    ): Response<ApiResponse<VerifyOtpResponseData>>
+
     @POST("api/auth/request-otp")
     suspend fun requestOtp(
         @Body request: RequestOtpRequest

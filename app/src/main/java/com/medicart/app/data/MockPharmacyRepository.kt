@@ -383,6 +383,220 @@ class MockPharmacyRepository(
         Result.failure(IllegalArgumentException("Invalid verification code."))
     }
 
+    override suspend fun login(phoneNumber: String, password: String): Result<User> = withContext(Dispatchers.IO) {
+        val cleanNumber = phoneNumber.filter { it.isDigit() }.takeLast(10)
+        if (cleanNumber.length != 10) {
+            return@withContext Result.failure(IllegalArgumentException("Please enter a valid 10-digit Indian mobile number."))
+        }
+        if (password.isBlank()) {
+            return@withContext Result.failure(IllegalArgumentException("Password cannot be empty."))
+        }
+
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.login(LoginRequest(cleanNumber, password))
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val data = response.body()?.data
+                    if (data != null) {
+                        sessionManager?.saveSession(
+                            mobileNumber = data.user.phoneNumber,
+                            token = data.token,
+                            recipientName = data.user.name
+                        )
+                        _isAuthenticated.value = true
+                        launch {
+                            try {
+                                fetchOrders()
+                                fetchAddresses()
+                            } catch (_: Exception) {}
+                        }
+                        return@withContext Result.success(User(data.user.name, data.user.phoneNumber))
+                    }
+                }
+                val errorMsg = NetworkModule.parseErrorMessage(response)
+                return@withContext Result.failure(Exception(errorMsg))
+            } catch (e: IOException) {
+                Log.w(TAG, "Login network failure: ${e.message}")
+                return@withContext Result.failure(Exception("Network error. Please check your internet connection."))
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+
+        // Test/Offline fallback
+        if ((cleanNumber == "9876543210" && (password == "Demo@1234" || password == "Password@123")) ||
+            password.length >= 8
+        ) {
+            _isAuthenticated.value = true
+            sessionManager?.saveSession(cleanNumber, "jwt_simulated_${System.currentTimeMillis()}", "Sahil Kumar")
+            return@withContext Result.success(User("Sahil Kumar", cleanNumber))
+        }
+        Result.failure(Exception("Invalid mobile number or password."))
+    }
+
+    override suspend fun registerRequestOtp(
+        name: String,
+        phoneNumber: String,
+        password: String
+    ): Result<String> = withContext(Dispatchers.IO) {
+        val cleanNumber = phoneNumber.filter { it.isDigit() }.takeLast(10)
+        if (cleanNumber.length != 10) {
+            return@withContext Result.failure(IllegalArgumentException("Please enter a valid 10-digit mobile number."))
+        }
+        if (name.isBlank()) {
+            return@withContext Result.failure(IllegalArgumentException("Name cannot be empty."))
+        }
+        if (password.length < 8) {
+            return@withContext Result.failure(IllegalArgumentException("Password must be at least 8 characters."))
+        }
+
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.registerRequestOtp(RegisterRequestOtpRequest(name, cleanNumber, password))
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val simOtp = response.body()?.data?.simulatedOtp ?: "487210"
+                    return@withContext Result.success(simOtp)
+                }
+                val errorMsg = NetworkModule.parseErrorMessage(response)
+                return@withContext Result.failure(Exception(errorMsg))
+            } catch (e: IOException) {
+                return@withContext Result.failure(Exception("Network error. Please check your internet connection."))
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+        Result.success("487210")
+    }
+
+    override suspend fun registerVerifyOtp(
+        phoneNumber: String,
+        otp: String,
+        name: String,
+        password: String
+    ): Result<Boolean> = withContext(Dispatchers.IO) {
+        val cleanNumber = phoneNumber.filter { it.isDigit() }.takeLast(10)
+        val cleanOtp = otp.filter { it.isDigit() }.take(6)
+
+        if (cleanOtp.length != 6) {
+            return@withContext Result.failure(IllegalArgumentException("Please enter a complete 6-digit OTP code."))
+        }
+
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.registerVerifyOtp(
+                    RegisterVerifyOtpRequest(cleanNumber, cleanOtp, name, password)
+                )
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val data = response.body()?.data
+                    if (data != null) {
+                        sessionManager?.saveSession(
+                            mobileNumber = data.user.phoneNumber,
+                            token = data.token,
+                            recipientName = data.user.name
+                        )
+                        _isAuthenticated.value = true
+                        return@withContext Result.success(true)
+                    }
+                }
+                val errorMsg = NetworkModule.parseErrorMessage(response)
+                return@withContext Result.failure(Exception(errorMsg))
+            } catch (e: IOException) {
+                return@withContext Result.failure(Exception("Network error. Please check your internet connection."))
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+
+        // Test/Offline fallback
+        if (cleanOtp == "487210" || cleanOtp.length == 6) {
+            _isAuthenticated.value = true
+            sessionManager?.saveSession(cleanNumber, "jwt_simulated_${System.currentTimeMillis()}", name)
+            return@withContext Result.success(true)
+        }
+        Result.failure(Exception("Invalid verification code."))
+    }
+
+    override suspend fun forgotPasswordRequestOtp(phoneNumber: String): Result<String> = withContext(Dispatchers.IO) {
+        val cleanNumber = phoneNumber.filter { it.isDigit() }.takeLast(10)
+        if (cleanNumber.length != 10) {
+            return@withContext Result.failure(IllegalArgumentException("Please enter a valid 10-digit mobile number."))
+        }
+
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.forgotPasswordRequestOtp(ForgotPasswordRequestOtpRequest(cleanNumber))
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val simOtp = response.body()?.data?.simulatedOtp ?: "487210"
+                    return@withContext Result.success(simOtp)
+                }
+                val errorMsg = NetworkModule.parseErrorMessage(response)
+                return@withContext Result.failure(Exception(errorMsg))
+            } catch (e: IOException) {
+                return@withContext Result.failure(Exception("Network error. Please check your internet connection."))
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+        Result.success("487210")
+    }
+
+    override suspend fun forgotPasswordReset(
+        phoneNumber: String,
+        otp: String,
+        newPassword: String
+    ): Result<Boolean> = withContext(Dispatchers.IO) {
+        val cleanNumber = phoneNumber.filter { it.isDigit() }.takeLast(10)
+        val cleanOtp = otp.filter { it.isDigit() }.take(6)
+
+        if (cleanOtp.length != 6) {
+            return@withContext Result.failure(IllegalArgumentException("Please enter a complete 6-digit OTP code."))
+        }
+        if (newPassword.length < 8) {
+            return@withContext Result.failure(IllegalArgumentException("Password must be at least 8 characters."))
+        }
+
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.forgotPasswordReset(
+                    ForgotPasswordResetRequest(cleanNumber, cleanOtp, newPassword)
+                )
+                if (response.isSuccessful && response.body()?.success == true) {
+                    return@withContext Result.success(true)
+                }
+                val errorMsg = NetworkModule.parseErrorMessage(response)
+                return@withContext Result.failure(Exception(errorMsg))
+            } catch (e: IOException) {
+                return@withContext Result.failure(Exception("Network error. Please check your internet connection."))
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+        Result.success(true)
+    }
+
+    override suspend fun changePassword(
+        currentPassword: String,
+        newPassword: String
+    ): Result<Boolean> = withContext(Dispatchers.IO) {
+        if (apiService != null && !_isOffline.value) {
+            try {
+                val response = apiService.changePassword(ChangePasswordRequest(currentPassword, newPassword))
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val data = response.body()?.data
+                    if (data != null) {
+                        sessionManager?.saveSession(data.user.phoneNumber, data.token, data.user.name)
+                    }
+                    return@withContext Result.success(true)
+                }
+                val errorMsg = NetworkModule.parseErrorMessage(response)
+                return@withContext Result.failure(Exception(errorMsg))
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+        Result.success(true)
+    }
+
     override suspend fun logout(): Unit = withContext(Dispatchers.IO) {
         _isAuthenticated.value = false
         sessionManager?.clearSession()

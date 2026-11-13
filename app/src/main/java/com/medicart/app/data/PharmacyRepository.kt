@@ -15,6 +15,12 @@ interface PharmacyRepository {
     val currentAddress: StateFlow<DeliveryAddress>
 
     fun setOfflineMode(offline: Boolean)
+    suspend fun login(phoneNumber: String, password: String): Result<User>
+    suspend fun registerRequestOtp(name: String, phoneNumber: String, password: String): Result<String> = Result.success("487210")
+    suspend fun registerVerifyOtp(phoneNumber: String, otp: String, name: String, password: String): Result<Boolean> = Result.success(true)
+    suspend fun forgotPasswordRequestOtp(phoneNumber: String): Result<String> = Result.success("487210")
+    suspend fun forgotPasswordReset(phoneNumber: String, otp: String, newPassword: String): Result<Boolean> = Result.success(true)
+    suspend fun changePassword(currentPassword: String, newPassword: String): Result<Boolean> = Result.success(true)
     suspend fun requestOtp(mobileNumber: String): Result<String> = Result.success("487210")
     suspend fun verifyOtp(mobileNumber: String, otp: String): Result<Boolean>
     suspend fun logout()
