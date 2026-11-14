@@ -7,7 +7,12 @@ const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   NODE_ENV: process.env.NODE_ENV || 'development',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
-  isTest: process.env.NODE_ENV === 'test'
+  isTest: process.env.NODE_ENV === 'test',
+  isProd: process.env.NODE_ENV === 'production',
+  // Demonstration / Production Authentication Safety
+  OTP_MODE: process.env.OTP_MODE || (process.env.NODE_ENV === 'production' ? 'DEMO' : 'DEV'),
+  DEMO_PHONE_NUMBER: process.env.DEMO_PHONE_NUMBER || '9876543210',
+  DEMO_OTP_CODE: process.env.DEMO_OTP_CODE || '487210'
 };
 
 module.exports = env;

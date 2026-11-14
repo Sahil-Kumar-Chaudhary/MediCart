@@ -54,28 +54,36 @@ submission/
 
 ## 3. Quick Run Instructions
 
-### 3.1. Start the Backend REST API
+### 3.1. Public Cloud Deployment (Render + MongoDB Atlas)
+1. **Database:** Deploy a free MongoDB Atlas cluster and whitelist `0.0.0.0/0`.
+2. **Backend Web Service:** Deploy `backend/` on Render using [`render.yaml`](../render.yaml) or a manual Web Service with:
+   - `NODE_ENV=production`
+   - `PORT=10000`
+   - `MONGODB_URI=<your-atlas-uri>`
+   - `OTP_MODE=DEMO`
+   - `DEMO_PHONE_NUMBER=9876543210`
+   - `DEMO_OTP_CODE=487210`
+3. **Build Android APK pointing to live Render URL:**
+   ```bash
+   .\gradlew.bat assembleDebug -PbackendUrl="https://<your-render-service>.onrender.com/"
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
+   ```
+   *The Android app will now communicate directly over public HTTPS without USB tethering or ADB reverse.*
+
+### 3.2. Local Development & Evaluation
 ```bash
+# 1. Start Backend REST API
 cd backend
 npm install
 npm test       # Runs 22 Jest & Supertest integration tests
 npm start      # Starts server on http://localhost:5000 (auto-seeded with 20 medicines)
-```
 
-### 3.2. Forward Port to Connected Android Phone
-```bash
+# 2. Forward Port to Connected Android Phone
 adb reverse tcp:5000 tcp:5000
-```
 
-### 3.3. Install & Run Android Client
-```bash
-# Run 30 Android unit and integration tests
-.\gradlew.bat testDebugUnitTest
-
-# Assemble fresh Debug APK
-.\gradlew.bat assembleDebug
-
-# Install verified APK onto attached phone
+# 3. Install & Run Android Client
+.\gradlew.bat testDebugUnitTest    # 30 Android unit tests
+.\gradlew.bat assembleDebug        # Builds debug APK
 adb install -r submission/apk/MediCart-debug.apk
 ```
 

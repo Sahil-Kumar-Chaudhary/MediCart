@@ -102,7 +102,72 @@ Compose screens observe immutable `StateFlow` state exposed by ViewModels. User 
 
 ---
 
-## 5. REST API Documentation
+## 5. Public Cloud Deployment Architecture (Render & MongoDB Atlas)
+
+```
++-----------------------------------------------------------------------------------+
+|                        Native Android Mobile App (CPH2333)                        |
+|                     Release APK / External Cellular or Wi-Fi                      |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         | HTTPS / REST (Port 443)
+                                         v
++-----------------------------------------------------------------------------------+
+|                           Render Web Service (medicart-api)                       |
+|                             Host: *.onrender.com                                  |
+|                                                                                   |
+|  - Runtime: Node.js (v24 LTS)                                                     |
+|  - Build Command: npm install                                                     |
+|  - Start Command: npm start (binds to 0.0.0.0:$PORT)                              |
+|  - Reverse Proxy Trust: app.set('trust proxy', 1)                                 |
+|  - Security: Helmet Headers, CORS, Rate Limiters                                  |
+|  - Health Probe: GET /health (HTTP 200 OK)                                        |
+|  - Isolated Demo Auth: Demo credentials in Render secrets; zero response leakage |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         | Secure TLS / Mongoose (Port 27017)
+                                         v
++-----------------------------------------------------------------------------------+
+|                            MongoDB Atlas Cloud Cluster                            |
+|                       Connection: mongodb+srv://...                               |
+|                                                                                   |
+|  - High Availability Multi-Region Replica Set                                     |
+|  - Auto-seeding on fresh empty cluster (20 generic products & demo address)       |
+|  - Persistent storage across server restarts                                      |
+|  - Unique index enforcement on idempotencyKey                                     |
++-----------------------------------------------------------------------------------+
+```
+
+### 5.1. Render Blueprint Specification (`render.yaml`)
+Infrastructure as Code is formalized in `render.yaml`:
+- **Service Name:** `medicart-backend`
+- **Root Directory:** `backend`
+- **Environment Variables Configured:**
+  - `NODE_ENV=production`
+  - `PORT=10000` (dynamically assigned by Render)
+  - `JWT_SECRET` (auto-generated cryptographically secure random secret by Render)
+  - `JWT_EXPIRES_IN=7d`
+  - `OTP_MODE=DEMO`
+  - `DEMO_PHONE_NUMBER=9876543210`
+  - `DEMO_OTP_CODE` (configured securely in Render dashboard, e.g. `487210`)
+  - `MONGODB_URI` (configured securely in Render dashboard pointing to Atlas cluster)
+
+### 5.2. Isolated Demonstration Authentication Mode
+Per security compliance, development OTP bypass is strictly blocked from leaking:
+1. In production, `simulatedOtp` is **never returned** in public API JSON responses.
+2. Only the explicitly authorized synthetic demonstration phone number (`DEMO_PHONE_NUMBER=9876543210`) is eligible for demo authentication.
+3. Verification uses constant-time byte comparisons (`crypto.timingSafeEqual`) to prevent timing side-channel attacks.
+4. Arbitrary phone numbers in production will generate random 6-digit codes; if a real SMS gateway is not connected, authentication is safely rejected without compromising real accounts.
+
+### 5.3. Android Dynamic Base URL Architecture
+In `app/build.gradle.kts` and `NetworkModule.kt`:
+- **Release Build Type:** Compiles with public HTTPS base URL (`BuildConfig.BASE_URL`).
+- **Dynamic Property Override:** Supports `-PbackendUrl=https://<your-render-service>.onrender.com/` for flexible build automation.
+- **Security Enforcement:** `network_security_config.xml` strictly enforces HTTPS across all public domains while confining cleartext HTTP to local developer loopbacks.
+
+---
+
+## 6. REST API Documentation
 
 | Method | Endpoint | Access | Purpose |
 | :--- | :--- | :---: | :--- |
@@ -122,7 +187,7 @@ Compose screens observe immutable `StateFlow` state exposed by ViewModels. User 
 
 ---
 
-## 6. Order Evidence Reconciliation
+## 7. Order Evidence Reconciliation
 
 ### 6.1. Explanation of Historical Discrepancies
 During early Phase 4/5 reporting, two discrepancies occurred:
@@ -164,7 +229,7 @@ Both orders are confirmed stored in MongoDB and rendered in the live Android Ord
 
 ---
 
-## 7. Critical Reliability & Edge Case Testing
+## 8. Critical Reliability & Edge Case Testing
 
 1. **Out-of-Stock Protection:** Attempting to place an order containing an out-of-stock item (`stockCount == 0`) returns HTTP `400 Bad Request` with code `OUT_OF_STOCK`.
 2. **Expired Batch Protection:** Medicines flagged as expired (`isExpired: true`) are rejected with HTTP `400 Bad Request` (`MEDICINE_EXPIRED`).
@@ -175,7 +240,7 @@ Both orders are confirmed stored in MongoDB and rendered in the live Android Ord
 
 ---
 
-## 8. Security & Privacy Audit
+## 9. Security & Privacy Audit
 
 1. **Stateless JWT Authorization:** Protected endpoints require `Authorization: Bearer <token>`. Unauthenticated requests receive HTTP 401; unauthorized resource access (e.g., accessing another user's address or order) returns HTTP 403.
 2. **Timing-Safe OTP:** Verification utilizes `crypto.timingSafeEqual` to thwart timing-based side-channel attacks.
@@ -187,7 +252,7 @@ Both orders are confirmed stored in MongoDB and rendered in the live Android Ord
 
 ---
 
-## 9. Performance & APK Build Audit
+## 10. Performance & APK Build Audit
 
 - **Debug APK Location:** `submission/apk/MediCart-debug.apk`
 - **File Size:** **16.5 MB** (17,300,474 bytes)
@@ -199,9 +264,9 @@ Both orders are confirmed stored in MongoDB and rendered in the live Android Ord
 
 ---
 
-## 10. Automated Test Results
+## 11. Automated Test Results
 
-### 10.1. Android Client Test Suite (30 Tests)
+### 11.1. Android Client Test Suite (30 Tests)
 Command: `.\gradlew.bat testDebugUnitTest`  
 Result: **BUILD SUCCESSFUL** (30/30 tests passed in 41s)
 - **Domain & Validation Tests (10 tests):**
@@ -209,7 +274,7 @@ Result: **BUILD SUCCESSFUL** (30/30 tests passed in 41s)
 - **Retrofit & Network Acceptance Tests (20 tests):**
   - `MockWebServer` verification of token interceptors, 401 unauthorized handling, 403 forbidden checks, offline database caching, cart persistence, and order submission.
 
-### 10.2. Backend REST API Test Suite (22 Tests)
+### 11.2. Backend REST API Test Suite (22 Tests)
 Command: `cd backend && npm test`  
 Result: **PASS** (22/22 tests passed in 6.2s)
 - Health check endpoint verification
@@ -226,9 +291,10 @@ Result: **PASS** (22/22 tests passed in 6.2s)
 
 ---
 
-## 11. Known Limitations & Future Roadmap
+## 12. Known Limitations & Cloud Deployment Roadmap
 
-1. **Local Demonstration Server:** Unless deployed to a public cloud provider, the backend operates locally. Physical hardware evaluation requires `adb reverse tcp:5000 tcp:5000` over USB.
-2. **Simulated Payment Gateway:** Payment flows are simulated for assessment safety; integration with live Razorpay or Cashfree SDKs is deferred to production deployment.
-3. **Prescription Upload OCR:** Prescription images can be attached locally; automated AI OCR validation for scheduled drugs remains a prospective feature.
-4. **Push Notifications:** Foreground state updates are handled via reactive StateFlow; FCM (Firebase Cloud Messaging) integration can be added for background order status alerts.
+1. **Cloud Web Service Deployment (Render):** The backend repository is configured with `render.yaml` for instant deployment to Render Web Services. For external mobile evaluation without ADB reverse or laptops, the service connects to MongoDB Atlas and serves public HTTPS traffic.
+2. **MongoDB Atlas Cloud Persistence:** Atlas TLS connection string (`mongodb+srv://...`) enables multi-region persistent data across server restarts, automatically initializing the 20 Indian formulations on first boot.
+3. **Simulated Payment Sandbox:** Payment flows (UPI Demo, COD, Card Demo) are safe demonstration sandboxes clearly communicating that no real money is deducted.
+4. **Prescription Upload & Scheduled Drugs:** Prescription images can be stored locally; automated AI OCR validation for scheduled drugs remains a prospective feature.
+5. **Push Notifications:** Foreground updates use reactive Kotlin `StateFlow`; Firebase Cloud Messaging (FCM) integration is planned for background delivery partner tracking alerts.

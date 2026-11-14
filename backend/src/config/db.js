@@ -8,10 +8,40 @@ const connectDB = async (customUri) => {
   try {
     const conn = await mongoose.connect(uri, {
       autoIndex: true,
-      serverSelectionTimeoutMS: 2000
+      serverSelectionTimeoutMS: 10000
     });
     if (!env.isTest) {
       console.log(`[Database] MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`);
+
+      // Auto-populate catalogue on fresh production Atlas database if empty
+      const Product = require('../models/Product');
+      const count = await Product.countDocuments();
+      if (count === 0) {
+        const { PRODUCTS_DATA } = require('../scripts/seed');
+        await Product.insertMany(PRODUCTS_DATA);
+        console.log(`[Database] Initialized fresh database with ${PRODUCTS_DATA.length} products.`);
+      }
+
+      // Ensure demo account exists
+      const User = require('../models/User');
+      const Address = require('../models/Address');
+      let user = await User.findOne({ phoneNumber: env.DEMO_PHONE_NUMBER });
+      if (!user) {
+        user = await User.create({ name: 'Sahil Kumar', phoneNumber: env.DEMO_PHONE_NUMBER });
+        await Address.create({
+          userId: user._id,
+          recipientName: 'Sahil Kumar',
+          phoneNumber: env.DEMO_PHONE_NUMBER,
+          houseNumber: 'Flat 402, Block B, Shanti Vihar',
+          locality: '12th Main Road, HAL 2nd Stage',
+          city: 'Bengaluru',
+          state: 'Karnataka',
+          pinCode: '560038',
+          addressType: 'HOME',
+          isDefault: true
+        });
+        console.log(`[Database] Initialized default demo account for ${env.DEMO_PHONE_NUMBER}.`);
+      }
     }
     return conn;
   } catch (error) {

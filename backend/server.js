@@ -5,8 +5,8 @@ const env = require('./src/config/env');
 const startServer = async () => {
   try {
     await connectDB();
-    const server = app.listen(env.PORT, () => {
-      console.log(`[MediCart Server] REST API listening on port ${env.PORT} in ${env.NODE_ENV} mode`);
+    const server = app.listen(env.PORT, '0.0.0.0', () => {
+      console.log(`[MediCart Server] REST API listening on 0.0.0.0:${env.PORT} in ${env.NODE_ENV} mode`);
       console.log(`[MediCart Server] Health Check: http://localhost:${env.PORT}/health`);
     });
 

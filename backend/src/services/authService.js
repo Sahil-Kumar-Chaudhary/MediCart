@@ -12,8 +12,17 @@ const hashOtp = (phoneNumber, otp) => {
 };
 
 const requestOtp = async (phoneNumber) => {
-  // Use predictable code in dev/test for reproducible testing, or generate 6-digit random
-  const rawOtp = (env.isDev || env.isTest) ? '487210' : Math.floor(100000 + Math.random() * 900000).toString();
+  const isDemoUser = phoneNumber === env.DEMO_PHONE_NUMBER;
+  let rawOtp;
+
+  if (env.isDev || env.isTest) {
+    rawOtp = env.DEMO_OTP_CODE;
+  } else if (env.OTP_MODE === 'DEMO' && isDemoUser) {
+    rawOtp = env.DEMO_OTP_CODE;
+  } else {
+    rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
   const hashed = hashOtp(phoneNumber, rawOtp);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes validity
 
@@ -29,8 +38,9 @@ const requestOtp = async (phoneNumber) => {
   return {
     phoneNumber,
     expiresInSeconds: 300,
-    // Strictly development only simulated OTP provider
-    ...(env.isDev || env.isTest ? { simulatedOtp: rawOtp } : {})
+    // Strictly development/testing only - NEVER returned in production
+    ...(env.isDev || env.isTest ? { simulatedOtp: rawOtp } : {}),
+    ...(env.isProd ? { isDemoAccount: isDemoUser } : {})
   };
 };
 
@@ -52,7 +62,11 @@ const verifyOtp = async (phoneNumber, otp) => {
   }
 
   const expectedHash = hashOtp(phoneNumber, otp);
-  if (record.otpHash !== expectedHash) {
+  const expectedBuf = Buffer.from(expectedHash, 'hex');
+  const recordBuf = Buffer.from(record.otpHash, 'hex');
+  const isMatch = expectedBuf.length === recordBuf.length && crypto.timingSafeEqual(expectedBuf, recordBuf);
+
+  if (!isMatch) {
     record.attempts += 1;
     await record.save();
     const error = new Error('Invalid verification code');

@@ -23,9 +23,13 @@ android {
     }
 
     buildTypes {
+        val publicBackendUrl = (project.findProperty("backendUrl") as? String)?.let {
+            if (it.endsWith("/")) it else "$it/"
+        } ?: "https://medicart-backend.onrender.com/"
+
         release {
             isMinifyEnabled = true
-            buildConfigField("String", "BASE_URL", "\"https://api.medicart.example.com/\"")
+            buildConfigField("String", "BASE_URL", "\"$publicBackendUrl\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -34,7 +38,10 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:5000/\"")
+            val debugBackendUrl = (project.findProperty("backendUrl") as? String)?.let {
+                if (it.endsWith("/")) it else "$it/"
+            } ?: "http://10.0.2.2:5000/"
+            buildConfigField("String", "BASE_URL", "\"$debugBackendUrl\"")
         }
     }
 

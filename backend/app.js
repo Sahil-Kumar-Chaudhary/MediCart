@@ -2,6 +2,7 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const { notFoundHandler, errorHandler } = require('./src/middleware/errorHandler');
+const { apiRateLimiter } = require('./src/middleware/rateLimiter');
 
 const authRoutes = require('./src/routes/authRoutes');
 const productRoutes = require('./src/routes/productRoutes');
@@ -11,9 +12,15 @@ const orderRoutes = require('./src/routes/orderRoutes');
 
 const app = express();
 
+// Enable reverse proxy trust for Render / Cloud hosting
+app.set('trust proxy', 1);
+
 // Security Headers & CORS
 app.use(helmet());
 app.use(cors());
+
+// Global API rate limiting
+app.use('/api', apiRateLimiter);
 
 // Body Parsers
 app.use(express.json({ limit: '10kb' }));

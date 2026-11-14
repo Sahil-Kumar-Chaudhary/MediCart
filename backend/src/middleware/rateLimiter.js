@@ -20,4 +20,21 @@ const authRateLimiter = env.isTest
       }
     });
 
-module.exports = { authRateLimiter };
+const apiRateLimiter = env.isTest
+  ? (req, res, next) => next()
+  : rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 150, // Max 150 requests per 15 minutes per IP
+      standardHeaders: true,
+      legacyHeaders: false,
+      handler: (req, res) => {
+        return errorResponse(
+          res,
+          429,
+          'API rate limit exceeded. Please wait a few moments before trying again.',
+          'TOO_MANY_REQUESTS'
+        );
+      }
+    });
+
+module.exports = { authRateLimiter, apiRateLimiter };

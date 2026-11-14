@@ -189,9 +189,43 @@ app/src/main/java/com/medicart/app/
 
 ---
 
-## 8. Backend REST API Endpoints & Configuration
+## 8. Backend REST API & Cloud Deployment Architecture
 
-> **Deployment Declaration:** The backend demonstration is currently configured for local evaluation (`localhost:5000`). For physical device testing, use ADB reverse port-forwarding as documented below.
+The MediCart backend is production-ready for public cloud deployment on **Render Web Services** backed by **MongoDB Atlas**, enabling the native Android application to communicate over public HTTPS without requiring ADB port forwarding, laptops, or USB debugging.
+
+```
++-----------------------------------------------------------------------------------+
+|                        Native Android Mobile App (CPH2333)                        |
+|                     Release APK / External Cellular or Wi-Fi                      |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         | HTTPS / REST (Port 443)
+                                         v
++-----------------------------------------------------------------------------------+
+|                           Render Web Service (medicart-api)                       |
+|                             Host: *.onrender.com                                  |
+|                                                                                   |
+|  - Runtime: Node.js (v24 LTS)                                                     |
+|  - Build Command: npm install                                                     |
+|  - Start Command: npm start (binds to 0.0.0.0:$PORT)                              |
+|  - Reverse Proxy Trust: app.set('trust proxy', 1)                                 |
+|  - Security: Helmet Headers, CORS, Rate Limiters                                  |
+|  - Health Probe: GET /health (HTTP 200 OK)                                        |
+|  - Isolated Demo Auth: Demo credentials in Render secrets; zero response leakage |
++-----------------------------------------------------------------------------------+
+                                         |
+                                         | Secure TLS / Mongoose (Port 27017)
+                                         v
++-----------------------------------------------------------------------------------+
+|                            MongoDB Atlas Cloud Cluster                            |
+|                       Connection: mongodb+srv://...                               |
+|                                                                                   |
+|  - High Availability Multi-Region Replica Set                                     |
+|  - Auto-seeding on fresh empty cluster (20 generic products & demo address)       |
+|  - Persistent storage across server restarts                                      |
+|  - Unique index enforcement on idempotencyKey                                     |
++-----------------------------------------------------------------------------------+
+```
 
 ### Key API Endpoints
 | Method | Endpoint | Auth | Purpose |
@@ -208,38 +242,65 @@ app/src/main/java/com/medicart/app/
 | `GET` | `/api/orders` | Bearer | User chronological order history |
 | `GET` | `/api/orders/:id` | Bearer | Detailed order record and progress timeline |
 
-### Development OTP Access
-- **Test Phone Number:** `9876543210`
-- **Simulated OTP Code:** `487210` (active in development/testing mode; in production mode `NODE_ENV=production`, secure randomized OTPs are generated and development simulation is disabled).
+### Demonstration Authentication Mode (Production Safe)
+- **Authorized Demo Phone Number:** `9876543210`
+- **Demo OTP Code:** `487210`
+- **Security Guardrail:** In production (`NODE_ENV=production`), `simulatedOtp` is **never leaked** in API responses. Verification uses constant-time byte comparisons (`crypto.timingSafeEqual`) to prevent timing side channels. Demo login is restricted strictly to the designated demo phone number.
 
 ---
 
-## 9. Build, Run & Testing Instructions
+## 9. Cloud Deployment & Build Instructions
 
-### Backend Server (Node.js & Express)
+### Option A: Render Cloud Deployment (1-Click Blueprint or Dashboard)
+
+#### 1. Setup MongoDB Atlas
+1. Create a free **M0 Sandbox Cluster** on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+2. Under **Database Access**, create a user (e.g. `medicart_admin`) with password.
+3. Under **Network Access**, add IP `0.0.0.0/0` (Allow Access from Anywhere so Render instances can connect).
+4. Copy the connection string: `mongodb+srv://<username>:<password>@<cluster>.mongodb.net/medicart?retryWrites=true&w=majority`.
+
+#### 2. Deploy to Render
+- **Blueprint Deployment:** Connect your GitHub repository `Sahil-Kumar-Chaudhary/MediCart` to Render. Render will automatically detect [`render.yaml`](render.yaml).
+- **Manual Web Service Deployment:**
+  - **Environment:** Node
+  - **Root Directory:** `backend`
+  - **Build Command:** `npm install`
+  - **Start Command:** `npm start`
+  - **Environment Variables:**
+    - `NODE_ENV`: `production`
+    - `PORT`: `10000`
+    - `MONGODB_URI`: `<your-atlas-uri>`
+    - `JWT_SECRET`: `<random-secure-secret-or-auto-generated>`
+    - `JWT_EXPIRES_IN`: `7d`
+    - `OTP_MODE`: `DEMO`
+    - `DEMO_PHONE_NUMBER`: `9876543210`
+    - `DEMO_OTP_CODE`: `487210`
+
+### Option B: Local Development & Physical Device Testing
 ```bash
+# 1. Start Local Backend
 cd backend
 npm install
 npm test       # Run 22 Jest acceptance tests
 npm start      # Launch server on http://localhost:5000 (auto-seeded with 20 Indian medicines)
-```
 
-### Physical Android Device Connection (USB Debugging)
-```bash
-# Reverse port 5000 so the phone accesses localhost:5000 over USB
+# 2. Reverse port to connected Android device over USB
 adb reverse tcp:5000 tcp:5000
 ```
 
-### Android Client Build & Test (Kotlin & Jetpack Compose)
+### Android Client Build (Configured for Cloud or Local)
 ```bash
-# Run 30 Android unit and integration tests
+# 1. Run 30 Android unit and integration tests
 .\gradlew.bat testDebugUnitTest
 
-# Assemble clean Debug APK
+# 2. Build APK targeting your live Render cloud backend
+.\gradlew.bat assembleDebug -PbackendUrl="https://<your-render-service>.onrender.com/"
+
+# 3. Or build default debug APK (uses http://10.0.2.2:5000/ or local adb reverse)
 .\gradlew.bat assembleDebug
 
-# Install verified APK directly to attached phone
-adb install -r submission/apk/MediCart-debug.apk
+# 4. Install onto connected Android device
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ---
