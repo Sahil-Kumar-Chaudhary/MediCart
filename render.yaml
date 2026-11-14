@@ -1,10 +1,8 @@
-# Render Blueprint Configuration for MediCart REST API
-# Documentation: https://render.com/docs/blueprint-spec
-
 services:
   - type: web
     name: medicart-backend
     runtime: node
+    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
@@ -13,8 +11,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: JWT_EXPIRES_IN
         value: 7d
       - key: OTP_MODE
@@ -22,8 +18,8 @@ services:
       - key: DEMO_PHONE_NUMBER
         value: 9876543210
       - key: DEMO_OTP_CODE
-        sync: false # Set securely in Render dashboard (e.g. 487210)
+        sync: false
       - key: MONGODB_URI
-        sync: false # Set securely in Render dashboard (MongoDB Atlas connection string)
+        sync: false
       - key: JWT_SECRET
-        generateValue: true # Render automatically generates a cryptographically secure random secret
+        generateValue: true

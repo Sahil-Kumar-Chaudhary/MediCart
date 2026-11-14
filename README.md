@@ -260,15 +260,15 @@ The MediCart backend is production-ready for public cloud deployment on **Render
 4. Copy the connection string: `mongodb+srv://<username>:<password>@<cluster>.mongodb.net/medicart?retryWrites=true&w=majority`.
 
 #### 2. Deploy to Render
-- **Blueprint Deployment:** Connect your GitHub repository `Sahil-Kumar-Chaudhary/MediCart` to Render. Render will automatically detect [`render.yaml`](render.yaml).
+- **Blueprint Deployment:** Connect your GitHub repository `Sahil-Kumar-Chaudhary/MediCart` to Render. Render will automatically detect [`render.yaml`](render.yaml) configured with `plan: free` (no payment info required).
 - **Manual Web Service Deployment:**
   - **Environment:** Node
+  - **Plan:** Free
   - **Root Directory:** `backend`
   - **Build Command:** `npm install`
   - **Start Command:** `npm start`
   - **Environment Variables:**
     - `NODE_ENV`: `production`
-    - `PORT`: `10000`
     - `MONGODB_URI`: `<your-atlas-uri>`
     - `JWT_SECRET`: `<random-secure-secret-or-auto-generated>`
     - `JWT_EXPIRES_IN`: `7d`

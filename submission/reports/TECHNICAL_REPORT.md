@@ -141,10 +141,10 @@ Compose screens observe immutable `StateFlow` state exposed by ViewModels. User 
 ### 5.1. Render Blueprint Specification (`render.yaml`)
 Infrastructure as Code is formalized in `render.yaml`:
 - **Service Name:** `medicart-backend`
+- **Plan:** `free` (Explicit Render Free tier compute plan; zero payment information required)
 - **Root Directory:** `backend`
 - **Environment Variables Configured:**
   - `NODE_ENV=production`
-  - `PORT=10000` (dynamically assigned by Render)
   - `JWT_SECRET` (auto-generated cryptographically secure random secret by Render)
   - `JWT_EXPIRES_IN=7d`
   - `OTP_MODE=DEMO`

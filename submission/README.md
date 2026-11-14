@@ -54,11 +54,11 @@ submission/
 
 ## 3. Quick Run Instructions
 
-### 3.1. Public Cloud Deployment (Render + MongoDB Atlas)
+### 3.1. Public Cloud Deployment (Render Free Plan + MongoDB Atlas)
 1. **Database:** Deploy a free MongoDB Atlas cluster and whitelist `0.0.0.0/0`.
-2. **Backend Web Service:** Deploy `backend/` on Render using [`render.yaml`](../render.yaml) or a manual Web Service with:
+2. **Backend Web Service:** Deploy `backend/` on Render using [`render.yaml`](../render.yaml) (`plan: free`, zero credit card required) or a manual Web Service with:
+   - `Plan: Free`
    - `NODE_ENV=production`
-   - `PORT=10000`
    - `MONGODB_URI=<your-atlas-uri>`
    - `OTP_MODE=DEMO`
    - `DEMO_PHONE_NUMBER=9876543210`
