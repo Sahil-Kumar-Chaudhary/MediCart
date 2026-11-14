@@ -183,11 +183,38 @@ app/src/main/java/com/medicart/app/
 | **Physical Hardware Live E2E**| Real Device (CPH2333) | Complete 25-step purchasing journey | 25 | **PASS** |
 | **TOTAL** | — | — | **77** | **100% PASS** |
 
-- **Live Hardware Milestone:** Verified on Android 13 (`CPH2333`) creating live backend order reference **`#MC-2026-2368`** with idempotency key `bb249f71-f58d-43f2-9b20-56b9a64b7103`.
+### Verified Reconciled Orders (Live MongoDB Records):
+- **Hardware Verified Order:** Reference **`#MC-2026-3947`** • Subtotal ₹153.00 (Paracare 650mg × 2, AyurTulsi × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹197.00** (`idempotencyKey: 4f925d49-5dd3-43fd-adac-a516ca3e2245`).
+- **Secondary API Test Order:** Reference **`#MC-2026-5796`** • Subtotal ₹90.00 (Paracare 650mg × 2, Cetriz-L × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹134.00** (`idempotencyKey: order_reconciled_1794656356462`).
 
 ---
 
-## 8. Build, Run & Testing Instructions
+## 8. Backend REST API Endpoints & Configuration
+
+> **Deployment Declaration:** The backend demonstration is currently configured for local evaluation (`localhost:5000`). For physical device testing, use ADB reverse port-forwarding as documented below.
+
+### Key API Endpoints
+| Method | Endpoint | Auth | Purpose |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/health` | None | Service heartbeat and uptime check |
+| `POST` | `/api/auth/request-otp` | None | Initiates OTP delivery (Rate limited) |
+| `POST` | `/api/auth/verify-otp` | None | Validates OTP and returns signed JWT |
+| `GET` | `/api/auth/me` | Bearer | Authenticated user profile |
+| `GET` | `/api/products` | None | Catalogue listing with category and search filter |
+| `GET` | `/api/products/:id` | None | Complete medicine details |
+| `GET` | `/api/addresses` | Bearer | User delivery address list |
+| `POST` | `/api/addresses` | Bearer | Creates new validated address |
+| `POST` | `/api/orders` | Bearer | Creates idempotent order with atomic inventory decrement |
+| `GET` | `/api/orders` | Bearer | User chronological order history |
+| `GET` | `/api/orders/:id` | Bearer | Detailed order record and progress timeline |
+
+### Development OTP Access
+- **Test Phone Number:** `9876543210`
+- **Simulated OTP Code:** `487210` (active in development/testing mode; in production mode `NODE_ENV=production`, secure randomized OTPs are generated and development simulation is disabled).
+
+---
+
+## 9. Build, Run & Testing Instructions
 
 ### Backend Server (Node.js & Express)
 ```bash
@@ -197,7 +224,13 @@ npm test       # Run 22 Jest acceptance tests
 npm start      # Launch server on http://localhost:5000 (auto-seeded with 20 Indian medicines)
 ```
 
-### Android Client (Kotlin & Jetpack Compose)
+### Physical Android Device Connection (USB Debugging)
+```bash
+# Reverse port 5000 so the phone accesses localhost:5000 over USB
+adb reverse tcp:5000 tcp:5000
+```
+
+### Android Client Build & Test (Kotlin & Jetpack Compose)
 ```bash
 # Run 30 Android unit and integration tests
 .\gradlew.bat testDebugUnitTest
@@ -205,25 +238,44 @@ npm start      # Launch server on http://localhost:5000 (auto-seeded with 20 Ind
 # Assemble clean Debug APK
 .\gradlew.bat assembleDebug
 
-# Output APK: app/build/outputs/apk/debug/app-debug.apk (19.43 MB)
-```
-
-### Physical Device Deployment
-```bash
-# Forward port 5000 to the connected phone
-adb reverse tcp:5000 tcp:5000
-
-# Install APK to device
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+# Install verified APK directly to attached phone
+adb install -r submission/apk/MediCart-debug.apk
 ```
 
 ---
 
-## 9. Submission Package & Artifacts
+## 10. Verified Application Screenshots Gallery
+
+| Screen | Location | Description |
+| :-: | :--- | :--- |
+| **01** | `submission/screenshots/01_splash.png` | Native animated splash with Emerald Green identity |
+| **02** | `submission/screenshots/02_login.png` | Indian mobile authentication (`+91 9876543210`) |
+| **03** | `submission/screenshots/03_home.png` | Deliverable PIN chip, categories, floating circular bottom bar |
+| **04** | `submission/screenshots/04_catalogue.png` | 20 generic formulations, category chips, stock badges |
+| **05** | `submission/screenshots/05_product_details.png` | Active ingredients, dosage warnings, return policy, Add CTA |
+| **06** | `submission/screenshots/06_cart.png` | Quantity stepper (max 5 packs), delivery fee ₹30, packaging ₹14 |
+| **07** | `submission/screenshots/07_checkout.png` | Delivery address confirmation, simulated UPI sandbox |
+| **08** | `submission/screenshots/08_order_confirmation.png` | Live backend order confirmation reference **`#MC-2026-3947`** |
+| **09** | `submission/screenshots/09_order_history.png` | Chronological orders showing `#MC-2026-3947` and `#MC-2026-5796` |
+| **10** | `submission/screenshots/10_order_details.png` | 4-stage tracking timeline (Dispensing & Packing) and itemized receipt |
+
+---
+
+## 11. Known Limitations & Roadmap
+
+1. **Local Backend Evaluation:** Backend runs on local development machines. Cloud deployment on Render or AWS ECS is planned for production.
+2. **Simulated Payment Gateway:** Sandbox simulation for UPI and Cards ensures safe evaluation without processing live funds.
+3. **Release APK Keystore:** Production keystores are not committed to source control following security best practices; `MediCart-debug.apk` is provided for assessment installation.
+4. **Push Notifications:** Foreground updates use reactive Kotlin StateFlow; Firebase Cloud Messaging (FCM) is planned for background alerts.
+
+---
+
+## 12. Submission Package
 
 All formal submission materials are organized in the [`submission/`](submission/) directory:
+- 📦 **Debug APK:** [`submission/apk/MediCart-debug.apk`](submission/apk/MediCart-debug.apk) (16.5 MB)
 - 📑 **Technical Report:** [`submission/reports/TECHNICAL_REPORT.md`](submission/reports/TECHNICAL_REPORT.md)
 - 🎬 **Video Demo Script:** [`submission/demo/DEMO_SCRIPT.md`](submission/demo/DEMO_SCRIPT.md)
 - 📱 **Physical Device Screenshots:** [`submission/screenshots/`](submission/screenshots/)
-- 📦 **Debug APK:** `app/build/outputs/apk/debug/app-debug.apk` (19.43 MB)
+- 📋 **Submission Overview:** [`submission/README.md`](submission/README.md)
 

@@ -129,7 +129,8 @@ fun MediCartNavGraph(
         }
 
         composable(Screen.OrderConfirmation.route) { backStackEntry ->
-            val orderRef = backStackEntry.arguments?.getString("orderRef") ?: "#MC-2026-8942"
+            val rawRef = backStackEntry.arguments?.getString("orderRef") ?: "#MC-2026-8942"
+            val orderRef = try { java.net.URLDecoder.decode(rawRef, "UTF-8") } catch (e: Exception) { rawRef }
             OrderConfirmationScreen(
                 orderRef = orderRef,
                 onViewOrderDetails = {
@@ -156,7 +157,8 @@ fun MediCartNavGraph(
         }
 
         composable(Screen.OrderDetail.route) { backStackEntry ->
-            val orderRef = backStackEntry.arguments?.getString("orderRef") ?: "#MC-2026-8942"
+            val rawRef = backStackEntry.arguments?.getString("orderRef") ?: "#MC-2026-8942"
+            val orderRef = try { java.net.URLDecoder.decode(rawRef, "UTF-8") } catch (e: Exception) { rawRef }
             OrderDetailScreen(
                 orderRef = orderRef,
                 repository = repository,

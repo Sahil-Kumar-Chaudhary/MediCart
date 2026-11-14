@@ -15,11 +15,11 @@ sealed class Screen(val route: String) {
     object Address : Screen("address")
     object Checkout : Screen("checkout")
     object OrderConfirmation : Screen("order_confirmation/{orderRef}") {
-        fun createRoute(orderRef: String) = "order_confirmation/$orderRef"
+        fun createRoute(orderRef: String) = "order_confirmation/${java.net.URLEncoder.encode(orderRef, "UTF-8")}"
     }
     object OrderHistory : Screen("orders")
     object OrderDetail : Screen("order_detail/{orderRef}") {
-        fun createRoute(orderRef: String) = "order_detail/$orderRef"
+        fun createRoute(orderRef: String) = "order_detail/${java.net.URLEncoder.encode(orderRef, "UTF-8")}"
     }
     object Profile : Screen("profile")
 }

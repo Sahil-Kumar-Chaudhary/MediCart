@@ -1,85 +1,108 @@
-# MediCart – Submission Package
+# MediCart – Official Submission Package
 
-**Applicant / Author:** Sahil Kumar Chaudhary  
-**Repository:** [https://github.com/Sahil-Kumar-Chaudhary/MediCart.git](https://github.com/Sahil-Kumar-Chaudhary/MediCart.git)  
+**Candidate / Author:** Sahil Kumar Chaudhary  
+**Organization:** ALGIONS AI LABS PRIVATE LIMITED  
+**Project Title:** MediCart – Android Online Pharmacy Application & REST API  
+**Official Repository:** [https://github.com/Sahil-Kumar-Chaudhary/MediCart.git](https://github.com/Sahil-Kumar-Chaudhary/MediCart.git)  
 **Main Branch:** `main`  
-**Verified On:** Physical Device `CPH2333` (Android 13)  
+**Verified On Hardware Device:** `CPH2333` (OPPO Reno7 5G, Android 13)  
 
 ---
 
-## Submission Package Contents
+## 1. Directory Structure
 
 ```
 submission/
-├── README.md                      <- This submission guide
+├── apk/
+│   └── MediCart-debug.apk             <- Clean, installable Android debug APK (16.5 MB)
+├── screenshots/                       <- Verified high-resolution physical hardware screenshots
+│   ├── 01_splash.png                  (Native Animated Splash Screen)
+│   ├── 02_login.png                   (Mobile Authentication Screen)
+│   ├── 03_home.png                    (Home Dashboard & Deliverable PIN)
+│   ├── 04_catalogue.png               (Filterable Medicine Catalogue)
+│   ├── 05_product_details.png         (Medicine Details & Formulations)
+│   ├── 06_cart.png                    (Shopping Cart & Transparent Fees)
+│   ├── 07_checkout.png                (Checkout & Address Selection)
+│   ├── 08_order_confirmation.png      (Live Confirmed Order #MC-2026-3947)
+│   ├── 09_order_history.png           (Order History with Reconciled Records)
+│   └── 10_order_details.png           (4-Stage Delivery Tracking Timeline)
 ├── reports/
-│   └── TECHNICAL_REPORT.md        <- Comprehensive QA, security & architecture report
+│   └── TECHNICAL_REPORT.md            <- Comprehensive architecture, security & QA report
 ├── demo/
-│   └── DEMO_SCRIPT.md             <- 5-minute video demonstration walkthrough script
-└── screenshots/                   <- High-resolution physical hardware screenshots
-    ├── physical_device_live.png                  (Login Screen)
-    ├── physical_device_otp_screen.png            (OTP Verification Screen)
-    ├── physical_device_home_authenticated.png    (Authenticated Home Screen)
-    ├── physical_device_products2.png             (Product Catalogue)
-    ├── physical_device_detail.png                (Product Detail Bottom Sheet)
-    ├── physical_device_cart.png                  (Cart Summary with Fee Engine)
-    ├── physical_device_checkout.png              (Checkout & Address Selection)
-    ├── physical_device_order_confirmation.png    (Order Confirmed #MC-2026-2368)
-    ├── physical_device_orders.png                (Order History Screen)
-    └── physical_device_order_detail_view.png     (Order Tracking & Progress Timeline)
+│   └── DEMO_SCRIPT.md                 <- 5-Minute live video demonstration script
+└── README.md                          <- This submission guide
 ```
 
 ---
 
-## Verified Screenshots Gallery
+## 2. Verified Hardware Screenshots Gallery
 
-| Screen | Description | File |
-| :--- | :--- | :--- |
-| **Login** | Mobile number entry with Indian country code | `screenshots/physical_device_live.png` |
-| **OTP Verification** | 6-digit code entry with auto-focus | `screenshots/physical_device_otp_screen.png` |
-| **Home Screen** | Categories, delivery address pill, search | `screenshots/physical_device_home_authenticated.png` |
-| **Catalogue** | Filterable medicines with stock indicators | `screenshots/physical_device_products2.png` |
-| **Cart** | Quantity stepper, regulatory cap, fee calculation | `screenshots/physical_device_cart.png` |
-| **Checkout** | Delivery address, payment options, totals | `screenshots/physical_device_checkout.png` |
-| **Order Confirmation** | Real order reference `#MC-2026-2368` | `screenshots/physical_device_order_confirmation.png` |
-| **Order History** | List of past orders with status badges | `screenshots/physical_device_orders.png` |
-| **Order Details** | 4-step delivery timeline & receipt snapshot | `screenshots/physical_device_order_detail_view.png` |
+| # | Screen Name | File | Description |
+| :-: | :--- | :--- | :--- |
+| **01** | Splash Screen | `screenshots/01_splash.png` | Native animated splash with Emerald Green identity |
+| **02** | Login | `screenshots/02_login.png` | Indian mobile authentication (`+91 9876543210`) |
+| **03** | Home Dashboard | `screenshots/03_home.png` | Deliverable PIN chip, categories, floating circular bottom bar |
+| **04** | Catalogue | `screenshots/04_catalogue.png` | 20 generic formulations, category chips, stock badges |
+| **05** | Product Details | `screenshots/05_product_details.png` | Active ingredients, dosage warnings, return policy, Add CTA |
+| **06** | Shopping Cart | `screenshots/06_cart.png` | Quantity stepper (max 5 packs), delivery fee ₹30, packaging ₹14 |
+| **07** | Checkout | `screenshots/07_checkout.png` | Delivery address confirmation, simulated UPI sandbox |
+| **08** | Order Confirmation | `screenshots/08_order_confirmation.png` | Live backend order confirmation reference **`#MC-2026-3947`** |
+| **09** | Order History | `screenshots/09_order_history.png` | Chronological orders showing `#MC-2026-3947` and `#MC-2026-5796` |
+| **10** | Order Details | `screenshots/10_order_details.png` | 4-stage tracking timeline (Dispensing & Packing) and itemized receipt |
 
 ---
 
-## Build & Run Instructions
+## 3. Quick Run Instructions
 
-### 1. Backend Server
+### 3.1. Start the Backend REST API
 ```bash
 cd backend
 npm install
-npm test      # Executes 22 Jest acceptance tests
-npm start     # Starts Express server on http://localhost:5000 (auto-seeded)
+npm test       # Runs 22 Jest & Supertest integration tests
+npm start      # Starts server on http://localhost:5000 (auto-seeded with 20 medicines)
 ```
 
-### 2. Android Client
-```bash
-# Unit & integration acceptance tests (30 tests)
-.\gradlew.bat testDebugUnitTest
-
-# Assemble debug APK
-.\gradlew.bat assembleDebug
-
-# Output location:
-# app/build/outputs/apk/debug/app-debug.apk (19.43 MB)
-```
-
-### 3. Connect Physical Device over USB
+### 3.2. Forward Port to Connected Android Phone
 ```bash
 adb reverse tcp:5000 tcp:5000
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+### 3.3. Install & Run Android Client
+```bash
+# Run 30 Android unit and integration tests
+.\gradlew.bat testDebugUnitTest
+
+# Assemble fresh Debug APK
+.\gradlew.bat assembleDebug
+
+# Install verified APK onto attached phone
+adb install -r submission/apk/MediCart-debug.apk
 ```
 
 ---
 
-## Test Verification Summary
+## 4. Reconciled Order Evidence
+
+| Order Attribute | Primary Hardware Order | Secondary API Test Order |
+| :--- | :--- | :--- |
+| **Order Reference** | **`#MC-2026-3947`** | **`#MC-2026-5796`** |
+| **MongoDB ID** | `6af84a37de616014ffa912c4` | `6af84864de616014ffa9129e` |
+| **User ID** | `6af847f7de616014ffa9127e` | `6af847f7de616014ffa9127e` |
+| **Idempotency Key** | `4f925d49-5dd3-43fd-adac-a516ca3e2245` | `order_reconciled_1794656356462` |
+| **Items Ordered** | • Paracare 650mg (Qty: 2, ₹68)<br>• AyurTulsi Syrup (Qty: 1, ₹85) | • Paracare 650mg (Qty: 2, ₹68)<br>• Cetriz-L 10mg (Qty: 1, ₹22) |
+| **Subtotal** | ₹153.00 (15300 paise) | ₹90.00 (9000 paise) |
+| **Delivery Fee** | ₹30.00 (3000 paise) | ₹30.00 (3000 paise) |
+| **Packaging Fee** | ₹14.00 (1400 paise) | ₹14.00 (1400 paise) |
+| **Final Total** | **₹197.00** (19700 paise) | **₹134.00** (13400 paise) |
+| **Payment Method** | `UPI_DEMO` | `UPI_DEMO` |
+| **Status** | `PROCESSING` | `PROCESSING` |
+
+---
+
+## 5. Verification Matrix Summary
+
 - **Android Unit & Domain Tests:** 10 / 10 passed
-- **Android Retrofit Integration Tests:** 20 / 20 passed
+- **Android Retrofit & Integration Tests:** 20 / 20 passed
 - **Backend Acceptance Tests:** 22 / 22 passed
-- **Hardware End-to-End Steps:** 25 / 25 verified live
-- **Total:** 77 / 77 (100% Pass Rate)
+- **Physical Device Interaction Steps:** 25 / 25 verified live
+- **Total Verification Scope:** **77 / 77 Steps (100% Pass Rate)**
