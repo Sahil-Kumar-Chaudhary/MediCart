@@ -184,6 +184,7 @@ app/src/main/java/com/medicart/app/
 | **TOTAL** | — | — | **77** | **100% PASS** |
 
 ### Verified Reconciled Orders (Live MongoDB Records):
+- **Live Cloud Render + Atlas Order:** Reference **`#MC-2026-3819`** • Subtotal ₹187.00 (Paracare 650mg × 3, AyurTulsi × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹231.00** (`idempotencyKey: e0b2c4ce-8f5b-429b-a232-afd06828947f`, MongoDB ID: `6af95011da0736228f500a46`, live at `https://medicart-backend-lmcz.onrender.com/`).
 - **Hardware Verified Order:** Reference **`#MC-2026-3947`** • Subtotal ₹153.00 (Paracare 650mg × 2, AyurTulsi × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹197.00** (`idempotencyKey: 4f925d49-5dd3-43fd-adac-a516ca3e2245`).
 - **Secondary API Test Order:** Reference **`#MC-2026-5796`** • Subtotal ₹90.00 (Paracare 650mg × 2, Cetriz-L × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹134.00** (`idempotencyKey: order_reconciled_1794656356462`).
 
@@ -191,7 +192,7 @@ app/src/main/java/com/medicart/app/
 
 ## 8. Backend REST API & Cloud Deployment Architecture
 
-The MediCart backend is production-ready for public cloud deployment on **Render Web Services** backed by **MongoDB Atlas**, enabling the native Android application to communicate over public HTTPS without requiring ADB port forwarding, laptops, or USB debugging.
+The MediCart backend is **live in production** on **Render Web Services** (`https://medicart-backend-lmcz.onrender.com/`) backed by **MongoDB Atlas**, enabling the native Android application to communicate over public HTTPS without requiring ADB port forwarding, laptops, or USB debugging.
 
 ```
 +-----------------------------------------------------------------------------------+

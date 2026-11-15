@@ -91,19 +91,20 @@ adb install -r submission/apk/MediCart-debug.apk
 
 ## 4. Reconciled Order Evidence
 
-| Order Attribute | Primary Hardware Order | Secondary API Test Order |
-| :--- | :--- | :--- |
-| **Order Reference** | **`#MC-2026-3947`** | **`#MC-2026-5796`** |
-| **MongoDB ID** | `6af84a37de616014ffa912c4` | `6af84864de616014ffa9129e` |
-| **User ID** | `6af847f7de616014ffa9127e` | `6af847f7de616014ffa9127e` |
-| **Idempotency Key** | `4f925d49-5dd3-43fd-adac-a516ca3e2245` | `order_reconciled_1794656356462` |
-| **Items Ordered** | • Paracare 650mg (Qty: 2, ₹68)<br>• AyurTulsi Syrup (Qty: 1, ₹85) | • Paracare 650mg (Qty: 2, ₹68)<br>• Cetriz-L 10mg (Qty: 1, ₹22) |
-| **Subtotal** | ₹153.00 (15300 paise) | ₹90.00 (9000 paise) |
-| **Delivery Fee** | ₹30.00 (3000 paise) | ₹30.00 (3000 paise) |
-| **Packaging Fee** | ₹14.00 (1400 paise) | ₹14.00 (1400 paise) |
-| **Final Total** | **₹197.00** (19700 paise) | **₹134.00** (13400 paise) |
-| **Payment Method** | `UPI_DEMO` | `UPI_DEMO` |
-| **Status** | `PROCESSING` | `PROCESSING` |
+| Order Attribute | Live Cloud Render + Atlas Order | Primary Hardware Order | Secondary API Test Order |
+| :--- | :--- | :--- | :--- |
+| **Order Reference** | **`#MC-2026-3819`** (Live HTTPS) | **`#MC-2026-3947`** | **`#MC-2026-5796`** |
+| **Backend Environment** | `https://medicart-backend-lmcz.onrender.com/` | Local Port 5000 | Local Port 5000 |
+| **MongoDB ID** | `6af95011da0736228f500a46` | `6af84a37de616014ffa912c4` | `6af84864de616014ffa9129e` |
+| **User ID** | `6af94e5bda0736228f500a1e` | `6af847f7de616014ffa9127e` | `6af847f7de616014ffa9127e` |
+| **Idempotency Key** | `e0b2c4ce-8f5b-429b-a232-afd06828947f` | `4f925d49-5dd3-43fd-adac-a516ca3e2245` | `order_reconciled_1794656356462` |
+| **Items Ordered** | • Paracare 650mg (Qty: 3, ₹102)<br>• AyurTulsi Syrup (Qty: 1, ₹85) | • Paracare 650mg (Qty: 2, ₹68)<br>• AyurTulsi Syrup (Qty: 1, ₹85) | • Paracare 650mg (Qty: 2, ₹68)<br>• Cetriz-L 10mg (Qty: 1, ₹22) |
+| **Subtotal** | ₹187.00 (18700 paise) | ₹153.00 (15300 paise) | ₹90.00 (9000 paise) |
+| **Delivery Fee** | ₹30.00 (3000 paise) | ₹30.00 (3000 paise) | ₹30.00 (3000 paise) |
+| **Packaging Fee** | ₹14.00 (1400 paise) | ₹14.00 (1400 paise) | ₹14.00 (1400 paise) |
+| **Final Total** | **₹231.00** (23100 paise) | **₹197.00** (19700 paise) | **₹134.00** (13400 paise) |
+| **Payment Method** | `UPI_DEMO` | `UPI_DEMO` | `UPI_DEMO` |
+| **Status** | `PROCESSING` | `PROCESSING` | `PROCESSING` |
 
 ---
 

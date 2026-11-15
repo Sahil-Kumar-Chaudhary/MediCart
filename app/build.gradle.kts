@@ -25,7 +25,7 @@ android {
     buildTypes {
         val publicBackendUrl = (project.findProperty("backendUrl") as? String)?.let {
             if (it.endsWith("/")) it else "$it/"
-        } ?: "https://medicart-backend.onrender.com/"
+        } ?: "https://medicart-backend-lmcz.onrender.com/"
 
         release {
             isMinifyEnabled = true

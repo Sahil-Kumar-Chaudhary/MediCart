@@ -204,6 +204,26 @@ During early Phase 4/5 reporting, two discrepancies occurred:
 ### 6.2. Fresh Verified Orders
 To ensure complete transparency and zero fabrication, fresh live orders were generated on the running Express backend and verified directly against MongoDB:
 
+#### Live Cloud Render + Atlas Verified Order (`#MC-2026-3819`)
+- **Order Reference:** `#MC-2026-3819`
+- **Backend Environment:** Public Render Web Service (`https://medicart-backend-lmcz.onrender.com/`)
+- **Database:** MongoDB Atlas Cloud Cluster
+- **MongoDB Object ID:** `6af95011da0736228f500a46`
+- **User ID:** `6af94e5bda0736228f500a1e`
+- **Idempotency Key:** `e0b2c4ce-8f5b-429b-a232-afd06828947f`
+- **Submission Source:** Native Android UI on physical smartphone `CPH2333` (Zero ADB reverse, public HTTPS)
+- **Line Items:**
+  1. `med_01` (Paracare 650mg Tablets) • **Quantity: 3** • Unit: ₹34.00 (3400 paise) • Line Total: ₹102.00 (10200 paise)
+  2. `med_03` (AyurTulsi Cough Relief Herbal Syrup) • **Quantity: 1** • Unit: ₹85.00 (8500 paise) • Line Total: ₹85.00 (8500 paise)
+- **Subtotal:** ₹187.00 (18700 paise)
+- **Delivery Fee:** ₹30.00 (3000 paise)
+- **Packaging Fee:** ₹14.00 (1400 paise)
+- **Final Total Amount:** **₹231.00** (23100 paise)
+- **Payment Method:** `UPI_DEMO`
+- **Order Status:** `PROCESSING`
+- **Delivery Address:** Flat 402, Block B, Shanti Vihar, 12th Main Road, HAL 2nd Stage, Bengaluru, Karnataka - 560038
+- **Created At:** `2026-11-15T06:24:17.103Z`
+
 #### Primary Hardware Verified Order (`#MC-2026-3947`)
 - **Order Reference:** `#MC-2026-3947`
 - **MongoDB Object ID:** `6af84a37de616014ffa912c4`
