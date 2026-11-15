@@ -1,0 +1,123 @@
+1
+00:00:00,000 --> 00:00:12,170
+Welcome to the technical demonstration of MediCart, a modern, production-grade Android pharmacy application developed for the internship assessment at ALGIONS AI LABS PRIVATE LIMITED.
+
+2
+00:00:12,420 --> 00:00:22,310
+MediCart is designed to make discovering, ordering, and managing essential medicines transparent, secure, and effortless for Indian consumers.
+
+3
+00:00:22,560 --> 00:00:29,060
+Let us walk through the complete end-to-end experience running live on a physical Android device.
+
+4
+00:00:29,660 --> 00:00:40,290
+MediCart features a robust phone number and password authentication system. Users can securely sign in with their ten-digit Indian mobile number.
+
+5
+00:00:40,540 --> 00:00:45,270
+The password field includes an interactive visibility toggle.
+
+6
+00:00:45,520 --> 00:00:59,990
+For new users, registration enforces a real-time criteria checklist ensuring passwords contain upper and lower case letters, numbers, and special symbols, verified through a constant-time HMAC OTP.
+
+7
+00:01:00,240 --> 00:01:09,480
+If a password is forgotten, an anti-enumeration recovery flow allows secure reset while instantly invalidating previous sessions.
+
+8
+00:01:10,080 --> 00:01:17,900
+Logging in brings us to the Home screen, styled with Material Design 3 and an elegant Emerald Green palette.
+
+9
+00:01:18,150 --> 00:01:23,360
+At the top, the deliverable postal PIN code displays serviceability.
+
+10
+00:01:23,610 --> 00:01:31,940
+Customers can browse through healthcare categories including Pain Relief, Cough and Cold, First Aid, and Vitamins.
+
+11
+00:01:32,190 --> 00:01:45,730
+Navigating to the Catalogue, twenty generic pharmaceutical formulations are fetched dynamically from our live cloud database, showing authentic MRP strikethroughs, discounts, and real-time stock indicators.
+
+12
+00:01:46,330 --> 00:01:56,100
+Opening a medicine reveals complete clinical transparency: active ingredients, dosage warnings, manufacturer details, and return policies.
+
+13
+00:01:56,350 --> 00:01:59,760
+Let's add Paracare 650 to the cart.
+
+14
+00:02:00,010 --> 00:02:11,430
+In the shopping cart, MediCart enforces strict Indian e-pharmacy regulatory compliance: users are capped at a maximum of five packs per formulation to prevent hoarding.
+
+15
+00:02:11,680 --> 00:02:20,700
+The transparent fee engine computes item totals, a flat delivery fee of thirty rupees, and hygienic packaging in integer paise.
+
+16
+00:02:21,300 --> 00:02:27,780
+Proceeding to checkout, we confirm our saved delivery address in Indiranagar, Bengaluru.
+
+17
+00:02:28,030 --> 00:02:40,650
+For payment, MediCart offers a simulated non-financial sandbox supporting UPI Demo, Cash on Delivery, and Cards, clearly communicating that no real money is deducted.
+
+18
+00:02:40,900 --> 00:02:47,810
+When placing the order, the client attaches a unique UUID idempotency key in the request header.
+
+19
+00:02:48,060 --> 00:02:57,590
+This guarantees that even during network jitter or accidental double-taps, duplicate orders and double inventory decrements are prevented.
+
+20
+00:02:58,190 --> 00:03:04,140
+The order is confirmed live by the server, generating our unique business reference.
+
+21
+00:03:04,390 --> 00:03:14,420
+Tapping into Order Details displays a four-stage visual timeline: Order Confirmed, Dispensing and Packing, Out for Delivery, and Delivered.
+
+22
+00:03:14,670 --> 00:03:20,810
+The line items preserve an immutable snapshot of prices at the moment of checkout.
+
+23
+00:03:21,060 --> 00:03:27,920
+In Order History, past orders remain fully accessible, synchronized with MongoDB.
+
+24
+00:03:28,520 --> 00:03:33,750
+Behind the scenes, reliability and security are top priorities.
+
+25
+00:03:33,999 --> 00:03:46,170
+On the client, authentication tokens are stored using Android Jetpack Security's EncryptedSharedPreferences, protected by AES-256 GCM in the hardware Keystore.
+
+26
+00:03:46,420 --> 00:03:59,500
+When network connectivity drops, the repository automatically falls back to an offline SQLite database, ensuring users can still access saved medicines and cart items without interruption.
+
+27
+00:04:00,100 --> 00:04:13,470
+MediCart's modern architecture combines Kotlin, Jetpack Compose, and MVVM on Android with a Node.js, Express, and MongoDB Atlas backend deployed publicly on Render.
+
+28
+00:04:13,720 --> 00:04:28,190
+The system has undergone rigorous automated testing, achieving a one hundred percent pass rate across forty-nine Android unit tests and thirty-nine backend API tests, totaling eighty-eight verified test cases.
+
+29
+00:04:28,790 --> 00:04:32,460
+Thank you for reviewing the MediCart demonstration.
+
+30
+00:04:32,710 --> 00:04:42,170
+With native Android excellence, cloud scalability, and pharmaceutical safety compliance, MediCart is fully prepared for evaluation.
+
+31
+00:04:42,420 --> 00:04:46,280
+Developed with dedication by Sahil Kumar Chaudhary.

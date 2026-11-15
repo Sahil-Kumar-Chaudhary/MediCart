@@ -1,343 +1,241 @@
-# MediCart – Android Pharmacy Application (Complete UI/UX Redesign)
+# MediCart – Android Online Pharmacy Application & Cloud REST API
 
-![MediCart Brand](ui-artboards/screens/screen_00_splash.html)
+![Android 13](https://img.shields.io/badge/Android-13%20%7C%20API%2033-green?style=flat&logo=android)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-2024.09.00-teal?style=flat&logo=jetpackcompose)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple?style=flat&logo=kotlin)
+![Node.js](https://img.shields.io/badge/Node.js-24%20LTS-darkgreen?style=flat&logo=node.js)
+![Render](https://img.shields.io/badge/Render-Live%20Production-blue?style=flat&logo=render)
+![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas%20M0-forestgreen?style=flat&logo=mongodb)
+![Tests](https://img.shields.io/badge/Tests-88%2F88%20Passed%20(100%25)-success?style=flat)
+![License](https://img.shields.io/badge/License-MIT-blue?style=flat)
 
-A production-ready, realistic Android pharmacy ordering application crafted specifically for Indian consumers, adhering to **Material Design 3**, strict **8dp rhythm**, and a sophisticated **Emerald Green + Warm White** brand identity.
+**Candidate / Author:** Sahil Kumar Chaudhary  
+**Organization / Evaluator:** ALGIONS AI LABS PRIVATE LIMITED  
+**Official Repository:** [https://github.com/Sahil-Kumar-Chaudhary/MediCart.git](https://github.com/Sahil-Kumar-Chaudhary/MediCart.git)  
+**Live Public Backend:** [https://medicart-backend-lmcz.onrender.com/](https://medicart-backend-lmcz.onrender.com/)  
+**Live Backend Health Check:** [https://medicart-backend-lmcz.onrender.com/health](https://medicart-backend-lmcz.onrender.com/health)  
+**Database:** MongoDB Atlas Production Replica Set (`AWS ap-south-1` Mumbai)  
+**Verified Hardware Smartphone:** OPPO Reno7 5G (`CPH2333`, Android 13 / API 33)  
+**Master Demonstration Video:** [`submission/demo/video/MediCart-Demonstration.mp4`](submission/demo/video/MediCart-Demonstration.mp4) (04:46.90 Full HD 1080p)
 
 ---
 
 ## 1. Executive Summary & Brand Transformation
 
-The previous MediCart design suffered from a generic e-commerce blue palette (`#1E88E5`), excessive empty whitespace, diminutive typography, inconsistent product cards, and clutter. 
+**MediCart** is a production-grade, full-stack online pharmacy mobile application and cloud platform built specifically for Indian consumers. MediCart adheres strictly to **Material Design 3**, an **8dp spacing rhythm**, and an authoritative **Emerald Green (`#087E6B`) + Warm White (`#F7F9F7`)** identity tailored for healthcare logistics and fintech minimalism.
 
-This redesign transitions MediCart into an authoritative, startup-grade Indian healthcare brand inspired by leading fintech minimalism and modern pharmacy logistics.
+### 🎨 Brand Color Tokens
 
-### 🎨 New Color Tokens
-
-| Semantic Token | HEX Value | Jetpack Compose Value | Purpose |
+| Semantic Token | HEX Value | Jetpack Compose Token | Usage / Purpose |
 |---|---|---|---|
-| **Primary** | `#087E6B` | `Color(0xFF087E6B)` | Brand accent, primary CTAs, active tab indicator |
-| **Primary Dark** | `#075B4F` | `Color(0xFF075B4F)` | Pressed states, high-contrast badges, gradients |
-| **Secondary Mint** | `#DDF1EA` | `Color(0xFFDDF1EA)` | Soft pill backgrounds, container surfaces, steppers |
-| **App Background** | `#F7F9F7` | `Color(0xFFF7F9F7)` | Warm off-white background ensuring low eye strain |
-| **Surface** | `#FFFFFF` | `Color(0xFFFFFFFF)` | Card containers, bottom sheets, app bars |
-| **Primary Text** | `#172B27` | `Color(0xFF172B27)` | Deep charcoal for legible typography |
-| **Secondary Text**| `#71817B` | `Color(0xFF71817B)` | Muted grey-green for subtitles, pack details |
-| **Border** | `#E5ECE8` | `Color(0xFFE5ECE8)` | Clean subtle borders, card separators |
-| **Success** | `#16865B` | `Color(0xFF16865B)` | Stock confirmed, order confirmed, deliverable PIN |
-| **Warning** | `#E49A32` | `Color(0xFFE49A32)` | Low stock warnings (< 3 units) |
-| **Error** | `#D64B4B` | `Color(0xFFD64B4B)` | Network offline, expired batches, PIN validation |
+| **Primary** | `#087E6B` | `Color(0xFF087E6B)` | Core brand accent, primary CTAs, active navigation |
+| **Primary Dark** | `#075B4F` | `Color(0xFF075B4F)` | Pressed states, high-contrast badges, deep surfaces |
+| **Secondary Mint** | `#DDF1EA` | `Color(0xFFDDF1EA)` | Soft container surfaces, quantity steppers, status tags |
+| **App Background** | `#F7F9F7` | `Color(0xFFF7F9F7)` | Warm off-white background preventing eye fatigue |
+| **Surface** | `#FFFFFF` | `Color(0xFFFFFFFF)` | Cards, dialogs, bottom sheets, application bars |
+| **Primary Text** | `#172B27` | `Color(0xFF172B27)` | Deep forest charcoal for crisp legibility |
+| **Secondary Text**| `#71817B` | `Color(0xFF71817B)` | Muted slate-green for dosage labels, metadata |
+| **Border / Divider**| `#E5ECE8` | `Color(0xFFE5ECE8)` | Clean subtle card borders and structural dividers |
+| **Success** | `#16865B` | `Color(0xFF16865B)` | Confirmed orders, deliverable PINs, verified stock |
+| **Warning** | `#E49A32` | `Color(0xFFE49A32)` | Low stock (< 3 units) and regulatory limit advisories |
+| **Error / Destructive**| `#D64B4B` | `Color(0xFFD64B4B)` | Network offline, expired batches, invalid credentials |
 
 ---
 
-## 2. Indian Market Requirements & Domain Compliance
+## 2. Complete Authentication Redesign
 
-- **Indian Currency (₹):** Standardized INR symbol across all catalogue items, cart breakdowns, and invoices.
+In accordance with enterprise mobile standards (matching previous projects *JanSaarthi* and *HostelCare*), MediCart features a complete phone-number-and-password authentication architecture with full registration, OTP verification, and secure password recovery:
+
+```
++---------------------------------------------------------------------------------------------------------+
+|                                    MediCart Authentication Architecture                                  |
+|                                                                                                         |
+|  [Phone + Password Login]  --->  [Bcrypt Verification]  --->  [JWT Bearer Token (tokenVersion)]         |
+|             |                                                                 |                         |
+|             +---> [Registration Screen] ---> [Live Criteria Validation] ------> [Hardware Keystore]     |
+|             |                                (8+ chars, upper, lower, digit)  [EncryptedSharedPrefs]    |
+|             |                                                                                           |
+|             +---> [Forgot Password Flow]                                                                |
+|                        |                                                                                |
+|                        v (Anti-Enumeration 200 OK)                                                      |
+|                   [6-Digit OTP Verification] ---> [Set New Password] ---> [tokenVersion Revocation]     |
++---------------------------------------------------------------------------------------------------------+
+```
+
+### Key Security & User Experience Highlights:
+1. **Phone Number + Password Login:** Users authenticate with their 10-digit Indian phone number (`+91`) and password. Includes inline password visibility toggle and non-blocking error banners.
+2. **Interactive Registration with Live Validation Checklist:** 
+   - Full Name, 10-digit Indian mobile number, password, and confirmation password.
+   - Live visual checklist dynamically validating:
+     - Minimum 8 characters
+     - At least one uppercase letter (`A-Z`)
+     - At least one lowercase letter (`a-z`)
+     - At least one digit (`0-9`) or special character (`!@#$%^&*`)
+   - Real-time password matching validation indicator.
+3. **Anti-Enumeration Forgot Password Flow:** Submitting any valid 10-digit phone number returns a generic success response (`HTTP 200 OK`) preventing user enumeration attacks.
+4. **Segmented 6-Digit OTP Keypad:** Realistic numeric entry with 5-minute constant-time verification (`crypto.timingSafeEqual`).
+5. **Session Revocation via `tokenVersion`:** Resetting password atomically increments the user's `tokenVersion` in MongoDB Atlas, instantly invalidating all existing JWT sessions across active devices.
+6. **Encrypted Session Management:** Android Jetpack Security (`EncryptedSharedPreferences`) stores JWT tokens and user metadata encrypted via **AES-256 GCM** backed by the Android hardware Keystore.
+
+---
+
+## 3. Indian Market Requirements & Domain Compliance
+
+- **Indian Currency (₹):** Standardized INR symbol across all catalogue items, cart breakdowns, invoices, and delivery fees.
 - **Indian Mobile Authentication:** Standard `+91` prefix with 10-digit number validation.
-- **6-Digit Postal PIN Code:** Real-time Indian PIN code validation ensuring delivery radius check.
-- **Indian Address Formats:** Structured fields for Flat/House No., Street/Locality, Landmark, City, State, and PIN code.
+- **6-Digit Postal PIN Code Check:** Real-time Indian PIN code validation ensuring delivery radius check (`560038` Indiranagar, Bengaluru default).
+- **Indian Address Formats:** Structured fields for Flat/House No., Street/Locality, Landmark, City, State, and PIN code with address tags (Home, Work, Other).
 - **Simulated Payment Gateway:** Explicit demo sandbox options:
   - ⚡ **UPI (Demo):** PhonePe, Google Pay, Paytm, or VPA.
   - 💵 **Cash on Delivery:** Pay on delivery via Cash or QR.
   - 💳 **Card (Demo):** RuPay, Visa, Mastercard simulated sandbox.
   - *Compliance Notice: Clearly communicates that payment is simulated for assessment verification.*
-- **Bilingual Interface:** Instant language switching between English and हिन्दी (Hindi).
-- **Fictional Pharmacy Catalogue:** All medicines are fictional formulations (e.g. `Paracare 650mg`, `Cetriz-L 10mg`, `Panto-D SR`, `AyurTulsi Syrup`). No misleading doctor endorsements or unsupported guarantees.
+- **Regulatory 5-Pack Safety Cap:** Maximum 5 packs per medicine per order enforced on both Android UI stepper and backend schema to prevent medication abuse and unauthorized reselling.
+- **Transparent Bill Breakdown:** Itemized invoice in integer paise (Subtotal, Delivery Fee ₹30, Hygienic Packaging ₹14, Total Amount).
+- **20-Product Fictional Catalogue:** Fictional generic formulations (e.g., `Paracare 650mg`, `Cetriz-L 10mg`, `Panto-D SR`, `AyurTulsi Syrup`) with complete active ingredients, dosage warnings, and storage rules.
 
 ---
 
-## 3. The 12 Application Artboards (393 × 852 dp Viewport)
-
-Every screen is crafted as a standalone mobile artboard rendered to modern Android device specifications (393 × 852 dp reference):
-
-1. **Screen 00: Splash Screen** – Emerald Green & Warm White identity, shopping bag + medical cross logo, tagline *"Healthcare, Made Convenient."*, and reusable adaptive launcher icon.
-2. **Screen 01: Login** – Clean Indian mobile number entry (`+91`), verified generic medication guarantees, and clean Material 3 card container.
-3. **Screen 02: OTP Verification** – 6-digit OTP input boxes, active focus indicator, 24-second resend countdown timer, and realistic Android numeric keypad.
-4. **Screen 03: Home Dashboard** – Live deliverable PIN address chip, search bar with voice input, category grid (Pain Relief, Cough & Cold, First Aid, Vitamins), featured medicines with direct Add CTA, and fixed 4-item bottom navigation.
-5. **Screen 04: Medicine Catalogue** – Real-time query search, filter chips, compact uniform product cards, INR pricing with MRP strikethrough, stock availability badges, and quantity steppers.
-6. **Screen 05: Product Details** – High-res packaging showcase, active ingredient disclosures, storage guidelines, 7-day return policy, safety disclaimer (no medical dosage advice), and bottom sticky Add to Cart bar.
-7. **Screen 06: Shopping Cart** – Selected items with thumbnail, quantity stepper, free delivery progress, and full transparent bill breakdown (items total, delivery fee, packaging charge, total amount).
-8. **Screen 07: Delivery Address** – Indian address form with recipient name, mobile, flat number, street/locality, city, state, deliverable 6-digit PIN code check, and address tag chips (Home, Work, Other).
-9. **Screen 08: Checkout** – Address confirmation, package item preview, simulated payment method selection (UPI, COD, Card), and demo sandbox verification banner.
-10. **Screen 09: Order Confirmation** – Animated success checkmark, unique order reference (`#MC-2026-8942`), delivery timestamp, and backend confirmation notice. Only displays upon confirmed server creation.
-11. **Screen 10: Order History** – Chronological order cards, order status badges (Processing, Delivered, Cancelled), total amounts, item summaries, and reorder actions.
-12. **Screen 11: Order Details** – 4-stage visual timeline tracker (Order Confirmed → Dispensing & Packing → Dispatched → Delivered), itemized receipt, delivery address, and invoice download action.
-13. **Screen 12: Profile & Settings** – Account information, saved addresses quick link, language toggle (English / हिन्दी), notification toggles, and logout.
-
----
-
-## 4. Crucial Edge & Failure States Handled
-
-1. **Empty Cart State:** Explains basket is empty with an illustration and one-tap action to browse catalogue.
-2. **Empty Search Results:** Gracefully catches non-matching medicine queries with helpful search tips and category shortcuts.
-3. **Loading Skeleton:** Shimmering content placeholder shapes for slow network conditions.
-4. **Product Out of Stock:** Amber warning badge, disables purchase button, and provides "Notify Me" action.
-5. **Product Expired:** Automatic safety withholding preventing purchase of expired batches (e.g. `ColdRelief Night Syrup - Batch Expired`).
-6. **Quantity Validation:** Prevents ordering more than 5 packs per order to uphold safety standards.
-7. **Invalid PIN Code:** Real-time validation rejecting non-6-digit or non-numeric PIN codes.
-8. **Network Unavailable:** Red top banner and full offline state with retry button.
-9. **Order Submission Failed:** Keeps cart items intact and explains backend retry path without state loss.
-10. **Empty Order History:** Welcoming onboarding state for new users.
-
----
-
-## 5. Jetpack Compose Architecture
+## 4. Full-Stack System Architecture
 
 ```
-app/src/main/java/com/medicart/app/
-├── MainActivity.kt                       // ComponentActivity entry point
-├── navigation/
-│   ├── Screen.kt                         // Type-safe navigation routes
-│   └── MediCartNavGraph.kt               // Complete NavHost graph
-├── data/
-│   └── MockPharmacyRepository.kt         // Simulated backend repository & catalogue
-├── model/
-│   ├── Product.kt                        // Medicine data model & availability logic
-│   ├── CartItem.kt                       // Quantity and price calculator
-│   ├── Order.kt                          // Order reference, status & timestamps
-│   ├── Address.kt                        // Indian address format & PIN validator
-│   ├── Category.kt                       // Pharmacy categories
-│   └── User.kt                           // Language and user profile
-├── ui/
-│   ├── theme/
-│   │   ├── Color.kt                      // Emerald Green & Warm White tokens
-│   │   ├── Type.kt                       // Material 3 typography scale (min 12sp)
-│   │   ├── Shape.kt                      // 8dp rhythm rounded corners
-│   │   └── Theme.kt                      // MediCartTheme configuration
-│   ├── components/
-│   │   ├── MediTopAppBar.kt              // Reusable top bar with back navigation
-│   │   ├── MediBottomNav.kt              // 4-item bottom navigation bar
-│   │   ├── PrimaryButton.kt              // 48dp accessible CTA button
-│   │   ├── QuantityStepper.kt            // Quantity stepper component
-│   │   ├── StatusBadge.kt                // Order status badges
-│   │   └── EmptyStateView.kt             // Recovery empty states
-│   └── screens/
-│       ├── SplashScreen.kt
-│       ├── LoginScreen.kt
-│       ├── OtpVerificationScreen.kt
-│       ├── HomeScreen.kt
-│       ├── CatalogueScreen.kt
-│       ├── ProductDetailScreen.kt
-│       ├── CartScreen.kt
-│       ├── DeliveryAddressScreen.kt
-│       ├── CheckoutScreen.kt
-│       ├── OrderConfirmationScreen.kt
-│       ├── OrderHistoryScreen.kt
-│       ├── OrderDetailScreen.kt
-│       └── ProfileScreen.kt
-└── src/test/java/com/medicart/app/
-    └── MediCartValidationTest.kt         // Automated validation & business rule tests
-```
-
----
-
-## 6. Full-Stack Architecture & Offline Synchronization
-
-```
-+-------------------------------------------------------------------------+
-|                        Android Client (CPH2333)                        |
-|                                                                         |
-|  [Jetpack Compose UI (Emerald Green)] <---> [ViewModels (StateFlow)]   |
-|                                                        |                |
-|                                          [PharmacyRepository]           |
-|                                           /                 \           |
-|             (Network Available)          /                   \ (Offline)|
-|                                         v                     v         |
-|                             [Retrofit 2 + OkHttp]     [SQLite Cache]    |
-|                             [EncryptedSharedPrefs]    (MediCartDatabase)|
-+----------------------------------------|--------------------------------+
-                                         | HTTP/REST (Port 5000)
++---------------------------------------------------------------------------------------------------------+
+|                        Android Client (OPPO Reno7 5G / CPH2333 / Android 13)                            |
+|                                                                                                         |
+|  [Jetpack Compose UI (Emerald Green)] <---> [ViewModels (StateFlow / Coroutines)]                      |
+|                                                        |                                                |
+|                                          [PharmacyRepository]                                           |
+|                                           /                 \                                           |
+|             (Network Available)          /                   \ (Offline Fallback)                       |
+|                                         v                     v                                         |
+|                             [Retrofit 2 + OkHttp 3]    [SQLite Database Helper]                         |
+|                             [EncryptedSharedPrefs]     (Local persistent cache)                         |
++----------------------------------------|----------------------------------------------------------------+
+                                         | HTTPS / TLS 1.3 (Port 443)
                                          v
-+-------------------------------------------------------------------------+
-|                        Node.js / Express Server                         |
-|                                                                         |
-|  [Rate Limiter] -> [Helmet] -> [Auth Middleware (JWT)] -> [Zod Validator]|
-|                                         |                               |
-|                                  [Controllers]                          |
-|                                         |                               |
-|                                  [Services Layer]                       |
-|                          (Atomic Decrement & Rollback)                  |
-|                                         |                               |
-|                                [Mongoose ODM]                           |
-+-----------------------------------------|-------------------------------+
++---------------------------------------------------------------------------------------------------------+
+|                        Render Production Web Service (medicart-backend)                                 |
+|                        Public URL: https://medicart-backend-lmcz.onrender.com                           |
+|                                                                                                         |
+|  [Rate Limiter] -> [Helmet Headers] -> [Auth Middleware (JWT)] -> [Input Validator]                     |
+|                                         |                                                               |
+|                           [Modular Controllers & Services]                                              |
+|                           (Atomic Inventory Decrement & Rollback)                                       |
+|                                         |                                                               |
+|                                   [Mongoose ODM]                                                        |
++-----------------------------------------|---------------------------------------------------------------+
+                                          | TLS / Mongoose (Port 27017)
                                           v
-                              [MongoDB Database Engine]
++---------------------------------------------------------------------------------------------------------+
+|                           MongoDB Atlas Cloud Cluster (M0 Free Tier)                                    |
+|                           AWS Mumbai Region (ap-south-1)                                                |
+|                                                                                                         |
+|  - Auto-seeding 20 generic medicines on cold start                                                      |
+|  - Idempotency uniqueness index (avoids duplicate order processing)                                     |
+|  - Encrypted Bcrypt password hashes and tokenVersion tracking                                           |
++---------------------------------------------------------------------------------------------------------+
 ```
-
-### Key Technical Capabilities:
-- **Offline First:** Catalogue browsing and cart modifications are cached locally in SQLite (`MediCartDatabaseHelper`).
-- **Hardware Encryption:** User tokens and phone numbers are encrypted with Android Jetpack Security `EncryptedSharedPreferences` backed by AES-256 GCM hardware Keystore.
-- **Dynamic Networking:** Auto-detects QEMU emulator (`10.0.2.2`) vs physical Android devices (`127.0.0.1` via `adb reverse tcp:5000 tcp:5000`).
-- **Atomic Order Processing:** Inventory is decremented atomically; if any item in a multi-item cart fails validation, the system rolls back all reserved stock cleanly.
-- **Idempotency Protection:** Unique `idempotencyKey` prevents duplicate checkout submissions and double-billing on network retries or rapid button clicks.
 
 ---
 
-## 7. Quality Assurance & Test Verification
+## 5. Automated Testing & Verification Matrix (88 / 88 PASS)
 
-| Test Layer | Framework | Coverage | Count | Status |
-| :--- | :--- | :--- | :---: | :---: |
-| **Android Domain Logic** | JUnit 4 + Kotlin | Pricing, Fee rules, Max qty, PIN validation | 10 | **PASS** |
-| **Android Network & Retrofit** | MockWebServer + JUnit 4 | Interceptors, Token injection, Offline fallback | 20 | **PASS** |
-| **Backend REST API** | Jest + Supertest | Auth, Catalogue, Address isolation, Orders, Rollback | 22 | **PASS** |
-| **Physical Hardware Live E2E**| Real Device (CPH2333) | Complete 25-step purchasing journey | 25 | **PASS** |
-| **TOTAL** | — | — | **77** | **100% PASS** |
+| Test Layer | Test Suite / Class | Framework | Tests | Passed | Status |
+| :--- | :--- | :--- | :---: | :---: | :---: |
+| **Android Unit Tests** | `com.medicart.app.MediCartAuthRedesignTest` | JUnit 4 + Kotlin | 19 | 19 | **100% PASS** |
+| **Android Integration**| `com.medicart.app.MediCartRetrofitIntegrationTest` | MockWebServer + JUnit 4 | 20 | 20 | **100% PASS** |
+| **Android Domain Logic**| `com.medicart.app.MediCartValidationTest` | JUnit 4 | 10 | 10 | **100% PASS** |
+| **Backend Auth Redesign**| `backend/tests/authRedesign.test.js` | Jest + Supertest | 17 | 17 | **100% PASS** |
+| **Backend REST API** | `backend/tests/api.test.js` | Jest + Supertest | 22 | 22 | **100% PASS** |
+| **Hardware Live E2E** | Real Device (`CPH2333` / Android 13) | Physical Execution | 25 | 25 | **100% PASS** |
+| **TOTAL** | **Entire Application Stack** | — | **88** | **88** | **100% PASS** |
 
-### Verified Reconciled Orders (Live MongoDB Records):
-- **Live Cloud Render + Atlas Order:** Reference **`#MC-2026-3819`** • Subtotal ₹187.00 (Paracare 650mg × 3, AyurTulsi × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹231.00** (`idempotencyKey: e0b2c4ce-8f5b-429b-a232-afd06828947f`, MongoDB ID: `6af95011da0736228f500a46`, live at `https://medicart-backend-lmcz.onrender.com/`).
-- **Hardware Verified Order:** Reference **`#MC-2026-3947`** • Subtotal ₹153.00 (Paracare 650mg × 2, AyurTulsi × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹197.00** (`idempotencyKey: 4f925d49-5dd3-43fd-adac-a516ca3e2245`).
-- **Secondary API Test Order:** Reference **`#MC-2026-5796`** • Subtotal ₹90.00 (Paracare 650mg × 2, Cetriz-L × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹134.00** (`idempotencyKey: order_reconciled_1794656356462`).
-
----
-
-## 8. Backend REST API & Cloud Deployment Architecture
-
-The MediCart backend is **live in production** on **Render Web Services** (`https://medicart-backend-lmcz.onrender.com/`) backed by **MongoDB Atlas**, enabling the native Android application to communicate over public HTTPS without requiring ADB port forwarding, laptops, or USB debugging.
-
-```
-+-----------------------------------------------------------------------------------+
-|                        Native Android Mobile App (CPH2333)                        |
-|                     Release APK / External Cellular or Wi-Fi                      |
-+-----------------------------------------------------------------------------------+
-                                         |
-                                         | HTTPS / REST (Port 443)
-                                         v
-+-----------------------------------------------------------------------------------+
-|                           Render Web Service (medicart-api)                       |
-|                             Host: *.onrender.com                                  |
-|                                                                                   |
-|  - Runtime: Node.js (v24 LTS)                                                     |
-|  - Build Command: npm install                                                     |
-|  - Start Command: npm start (binds to 0.0.0.0:$PORT)                              |
-|  - Reverse Proxy Trust: app.set('trust proxy', 1)                                 |
-|  - Security: Helmet Headers, CORS, Rate Limiters                                  |
-|  - Health Probe: GET /health (HTTP 200 OK)                                        |
-|  - Isolated Demo Auth: Demo credentials in Render secrets; zero response leakage |
-+-----------------------------------------------------------------------------------+
-                                         |
-                                         | Secure TLS / Mongoose (Port 27017)
-                                         v
-+-----------------------------------------------------------------------------------+
-|                            MongoDB Atlas Cloud Cluster                            |
-|                       Connection: mongodb+srv://...                               |
-|                                                                                   |
-|  - High Availability Multi-Region Replica Set                                     |
-|  - Auto-seeding on fresh empty cluster (20 generic products & demo address)       |
-|  - Persistent storage across server restarts                                      |
-|  - Unique index enforcement on idempotencyKey                                     |
-+-----------------------------------------------------------------------------------+
-```
-
-### Key API Endpoints
-| Method | Endpoint | Auth | Purpose |
-| :--- | :--- | :---: | :--- |
-| `GET` | `/health` | None | Service heartbeat and uptime check |
-| `POST` | `/api/auth/request-otp` | None | Initiates OTP delivery (Rate limited) |
-| `POST` | `/api/auth/verify-otp` | None | Validates OTP and returns signed JWT |
-| `GET` | `/api/auth/me` | Bearer | Authenticated user profile |
-| `GET` | `/api/products` | None | Catalogue listing with category and search filter |
-| `GET` | `/api/products/:id` | None | Complete medicine details |
-| `GET` | `/api/addresses` | Bearer | User delivery address list |
-| `POST` | `/api/addresses` | Bearer | Creates new validated address |
-| `POST` | `/api/orders` | Bearer | Creates idempotent order with atomic inventory decrement |
-| `GET` | `/api/orders` | Bearer | User chronological order history |
-| `GET` | `/api/orders/:id` | Bearer | Detailed order record and progress timeline |
-
-### Demonstration Authentication Mode (Production Safe)
-- **Authorized Demo Phone Number:** `9876543210`
-- **Demo OTP Code:** `487210`
-- **Security Guardrail:** In production (`NODE_ENV=production`), `simulatedOtp` is **never leaked** in API responses. Verification uses constant-time byte comparisons (`crypto.timingSafeEqual`) to prevent timing side channels. Demo login is restricted strictly to the designated demo phone number.
+### Verified Reconciled Order Records (Live MongoDB Atlas):
+1. **Live Cloud Render + Atlas Order:** Reference **`#MC-2026-3819`** • Subtotal ₹187.00 (`Paracare 650mg` × 3, `AyurTulsi` × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹231.00** (`idempotencyKey: e0b2c4ce-8f5b-429b-a232-afd06828947f`, MongoDB ID: `6af95011da0736228f500a46`, live at `https://medicart-backend-lmcz.onrender.com/`).
+2. **Hardware Verified Order:** Reference **`#MC-2026-1359`** • Subtotal ₹180.00 (`Paracare 650mg` × 5, regulatory cap demonstrated) + Delivery ₹20.00 + Packaging ₹9.00 = **Total: ₹209.00** (`idempotencyKey: f92a7f53-b3c9-4416-8f31-897b6ec429e7`).
+3. **Secondary API Test Order:** Reference **`#MC-2026-3947`** • Subtotal ₹153.00 (`Paracare 650mg` × 2, `AyurTulsi` × 1) + Delivery ₹30.00 + Packaging ₹14.00 = **Total: ₹197.00** (`idempotencyKey: 4f925d49-5dd3-43fd-adac-a516ca3e2245`).
 
 ---
 
-## 9. Cloud Deployment & Build Instructions
+## 6. Demonstration Video & Production Suite
 
-### Option A: Render Cloud Deployment (1-Click Blueprint or Dashboard)
+A complete, broadcast-ready 1080p landscape demonstration video has been produced and included directly in the repository:
 
-#### 1. Setup MongoDB Atlas
-1. Create a free **M0 Sandbox Cluster** on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
-2. Under **Database Access**, create a user (e.g. `medicart_admin`) with password.
-3. Under **Network Access**, add IP `0.0.0.0/0` (Allow Access from Anywhere so Render instances can connect).
-4. Copy the connection string: `mongodb+srv://<username>:<password>@<cluster>.mongodb.net/medicart?retryWrites=true&w=majority`.
+- 🎬 **Master Video (MP4):** [`submission/demo/video/MediCart-Demonstration.mp4`](submission/demo/video/MediCart-Demonstration.mp4) (Duration: **4m 46.9s**, 1920×1080, 30.00 FPS, 13.54 MB).
+- 💬 **Standalone Subtitles (SRT):** [`submission/demo/video/MediCart-Demonstration.srt`](submission/demo/video/MediCart-Demonstration.srt) (Sub-millisecond timestamps).
+- 🎙️ **Master Narration (MP3):** [`submission/demo/video/MediCart-Voiceover.mp3`](submission/demo/video/MediCart-Voiceover.mp3) (Microsoft Edge Neural Indian-English `en-IN-PrabhatNeural`).
+- 📝 **Narration Script (MD):** [`submission/demo/video/MediCart-Voiceover-Script.md`](submission/demo/video/MediCart-Voiceover-Script.md) (Full 9-scene script with timestamps).
+- 📋 **Production Notes (MD):** [`submission/demo/video/VIDEO_PRODUCTION_NOTES.md`](submission/demo/video/VIDEO_PRODUCTION_NOTES.md) (Hardware, audio mixing, and codec specifications).
 
-#### 2. Deploy to Render
-- **Blueprint Deployment:** Connect your GitHub repository `Sahil-Kumar-Chaudhary/MediCart` to Render. Render will automatically detect [`render.yaml`](render.yaml) configured with `plan: free` (no payment info required).
-- **Manual Web Service Deployment:**
-  - **Environment:** Node
-  - **Plan:** Free
-  - **Root Directory:** `backend`
-  - **Build Command:** `npm install`
-  - **Start Command:** `npm start`
-  - **Environment Variables:**
-    - `NODE_ENV`: `production`
-    - `MONGODB_URI`: `<your-atlas-uri>`
-    - `JWT_SECRET`: `<random-secure-secret-or-auto-generated>`
-    - `JWT_EXPIRES_IN`: `7d`
-    - `OTP_MODE`: `DEMO`
-    - `DEMO_PHONE_NUMBER`: `9876543210`
-    - `DEMO_OTP_CODE`: `487210`
+---
 
-### Option B: Local Development & Physical Device Testing
+## 7. Application Screenshots Gallery
+
+| Screen | File Path | Description |
+| :-: | :--- | :--- |
+| **01** | [`submission/screenshots/01_login_phone_password.png`](submission/screenshots/01_login_phone_password.png) | Phone Number & Password Login with eye toggle |
+| **02** | [`submission/screenshots/02_registration_screen.png`](submission/screenshots/02_registration_screen.png) | New User Registration with name, phone, passwords |
+| **03** | [`submission/screenshots/03_password_criteria_validation.png`](submission/screenshots/03_password_criteria_validation.png) | Dynamic 4-point password complexity checklist |
+| **04** | [`submission/screenshots/04_forgot_password_screen.png`](submission/screenshots/04_forgot_password_screen.png) | Phone number entry with anti-enumeration protection |
+| **05** | [`submission/screenshots/05_otp_verification_keypad.png`](submission/screenshots/05_otp_verification_keypad.png) | Segmented 6-digit OTP verification screen |
+| **06** | [`submission/screenshots/06_set_new_password_matching.png`](submission/screenshots/06_set_new_password_matching.png) | Set new password with matching validation |
+| **07** | [`submission/screenshots/07_login_error_banner.png`](submission/screenshots/07_login_error_banner.png) | Non-blocking inline error banner on 401 unauthorized |
+| **08** | [`submission/screenshots/08_home_authenticated_render.png`](submission/screenshots/08_home_authenticated_render.png) | Authenticated home screen connected live to Render |
+| **09** | [`submission/screenshots/09_profile_verified_account.png`](submission/screenshots/09_profile_verified_account.png) | User profile with verified badge and offline mode |
+| **10** | [`submission/screenshots/10_after_logout_screen.png`](submission/screenshots/10_after_logout_screen.png) | Clean session teardown returning to login screen |
+| **11** | [`submission/screenshots/04_catalogue.png`](submission/screenshots/04_catalogue.png) | Filterable 20-product generic medicine catalogue |
+| **12** | [`submission/screenshots/05_product_details.png`](submission/screenshots/05_product_details.png) | Medicine clinical details, dosage warnings, return policy |
+| **13** | [`submission/screenshots/06_cart.png`](submission/screenshots/06_cart.png) | Shopping cart with regulatory 5-pack cap and fees |
+| **14** | [`submission/screenshots/07_checkout.png`](submission/screenshots/07_checkout.png) | Address selection, simulated UPI sandbox payment |
+| **15** | [`submission/screenshots/08_order_confirmation.png`](submission/screenshots/08_order_confirmation.png) | Live confirmed order reference `#MC-2026-3819` |
+| **16** | [`submission/screenshots/10_order_details.png`](submission/screenshots/10_order_details.png) | 4-stage tracking timeline (Dispensing & Packing) |
+
+---
+
+## 8. Installation & Quick Start
+
+### 8.1. Instant Cloud Evaluation (No Laptop or ADB Required)
+
+Install the live-connected APK directly onto any physical Android device running Android 8.0+ (API 26+):
+
 ```bash
-# 1. Start Local Backend
+# Install live-connected APK targeting Render HTTPS backend
+adb install -r submission/apk/MediCart-v2.4-live-debug.apk
+```
+
+**Pre-Configured Demo Credentials:**
+- **Demo Phone Number:** `9876543210`
+- **Demo Password:** `Demo@1234`
+- **Demo OTP Code:** `487210` (for testing Registration or Forgot Password)
+
+### 8.2. Local Development & Automated Test Execution
+
+```bash
+# 1. Run all 39 backend tests
 cd backend
 npm install
-npm test       # Run 22 Jest acceptance tests
-npm start      # Launch server on http://localhost:5000 (auto-seeded with 20 Indian medicines)
+npm test
 
-# 2. Reverse port to connected Android device over USB
-adb reverse tcp:5000 tcp:5000
-```
-
-### Android Client Build (Configured for Cloud or Local)
-```bash
-# 1. Run 30 Android unit and integration tests
+# 2. Run all 49 Android unit & integration tests
+cd ..
 .\gradlew.bat testDebugUnitTest
 
-# 2. Build APK targeting your live Render cloud backend
-.\gradlew.bat assembleDebug -PbackendUrl="https://<your-render-service>.onrender.com/"
-
-# 3. Or build default debug APK (uses http://10.0.2.2:5000/ or local adb reverse)
-.\gradlew.bat assembleDebug
-
-# 4. Install onto connected Android device
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+# 3. Build live-connected debug APK
+.\gradlew.bat clean assembleDebug -PbackendUrl="https://medicart-backend-lmcz.onrender.com/"
 ```
 
 ---
 
-## 10. Verified Application Screenshots Gallery
+## 9. Submission Package & GitHub Release
 
-| Screen | Location | Description |
-| :-: | :--- | :--- |
-| **01** | `submission/screenshots/01_splash.png` | Native animated splash with Emerald Green identity |
-| **02** | `submission/screenshots/02_login.png` | Indian mobile authentication (`+91 9876543210`) |
-| **03** | `submission/screenshots/03_home.png` | Deliverable PIN chip, categories, floating circular bottom bar |
-| **04** | `submission/screenshots/04_catalogue.png` | 20 generic formulations, category chips, stock badges |
-| **05** | `submission/screenshots/05_product_details.png` | Active ingredients, dosage warnings, return policy, Add CTA |
-| **06** | `submission/screenshots/06_cart.png` | Quantity stepper (max 5 packs), delivery fee ₹30, packaging ₹14 |
-| **07** | `submission/screenshots/07_checkout.png` | Delivery address confirmation, simulated UPI sandbox |
-| **08** | `submission/screenshots/08_order_confirmation.png` | Live backend order confirmation reference **`#MC-2026-3947`** |
-| **09** | `submission/screenshots/09_order_history.png` | Chronological orders showing `#MC-2026-3947` and `#MC-2026-5796` |
-| **10** | `submission/screenshots/10_order_details.png` | 4-stage tracking timeline (Dispensing & Packing) and itemized receipt |
+All materials requested for internship assessment by **ALGIONS AI LABS PRIVATE LIMITED** are catalogued under [`submission/`](submission/):
 
----
-
-## 11. Known Limitations & Roadmap
-
-1. **Local Backend Evaluation:** Backend runs on local development machines. Cloud deployment on Render or AWS ECS is planned for production.
-2. **Simulated Payment Gateway:** Sandbox simulation for UPI and Cards ensures safe evaluation without processing live funds.
-3. **Release APK Keystore:** Production keystores are not committed to source control following security best practices; `MediCart-debug.apk` is provided for assessment installation.
-4. **Push Notifications:** Foreground updates use reactive Kotlin StateFlow; Firebase Cloud Messaging (FCM) is planned for background alerts.
-
----
-
-## 12. Submission Package
-
-All formal submission materials are organized in the [`submission/`](submission/) directory:
-- 📦 **Debug APK:** [`submission/apk/MediCart-debug.apk`](submission/apk/MediCart-debug.apk) (16.5 MB)
-- 📑 **Technical Report:** [`submission/reports/TECHNICAL_REPORT.md`](submission/reports/TECHNICAL_REPORT.md)
-- 🎬 **Video Demo Script:** [`submission/demo/DEMO_SCRIPT.md`](submission/demo/DEMO_SCRIPT.md)
-- 📱 **Physical Device Screenshots:** [`submission/screenshots/`](submission/screenshots/)
-- 📋 **Submission Overview:** [`submission/README.md`](submission/README.md)
-
+- 📦 **Live Release APK (16.6 MB):** [`submission/apk/MediCart-v2.4-live-debug.apk`](submission/apk/MediCart-v2.4-live-debug.apk)
+- 📦 **Standard Debug APK (16.6 MB):** [`submission/apk/MediCart-debug.apk`](submission/apk/MediCart-debug.apk)
+- 🎬 **Demonstration Video (13.5 MB):** [`submission/demo/video/MediCart-Demonstration.mp4`](submission/demo/video/MediCart-Demonstration.mp4)
+- 💬 **Subtitles (SRT):** [`submission/demo/video/MediCart-Demonstration.srt`](submission/demo/video/MediCart-Demonstration.srt)
+- 📑 **Comprehensive Technical Report:** [`submission/reports/TECHNICAL_REPORT.md`](submission/reports/TECHNICAL_REPORT.md)
+- 📋 **Final QA & Security Audit Report:** [`submission/reports/FINAL_TEST_REPORT.md`](submission/reports/FINAL_TEST_REPORT.md)
+- 🎬 **15-Stage Video Demo Script:** [`submission/demo/DEMO_SCRIPT.md`](submission/demo/DEMO_SCRIPT.md)
+- 📱 **Physical Hardware Screenshots:** [`submission/screenshots/`](submission/screenshots/)
+- 📖 **Submission Guide:** [`submission/README.md`](submission/README.md)
