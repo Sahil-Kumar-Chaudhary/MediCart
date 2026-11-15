@@ -28,9 +28,14 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Health Check Endpoint
 app.get('/health', (req, res) => {
+  const mongoose = require('mongoose');
+  const dbStates = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  const dbStatus = dbStates[mongoose.connection.readyState] || 'unknown';
+
   res.status(200).json({
     status: 'healthy',
     service: 'medicart-api',
+    database: dbStatus,
     timestamp: new Date().toISOString()
   });
 });

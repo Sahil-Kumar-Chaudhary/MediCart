@@ -165,6 +165,13 @@ In `app/build.gradle.kts` and `NetworkModule.kt`:
 - **Dynamic Property Override:** Supports `-PbackendUrl=https://<your-render-service>.onrender.com/` for flexible build automation.
 - **Security Enforcement:** `network_security_config.xml` strictly enforces HTTPS across all public domains while confining cleartext HTTP to local developer loopbacks.
 
+### 5.4. Cloud Startup Lifecycle & Resilience Fix
+- **Root Cause of Previous Deployment Failure:** `server.js` previously called `await connectDB()` before `app.listen()`. When `MONGODB_URI` was unconfigured or Atlas was establishing the TLS connection, `connectDB()` threw `MongooseServerSelectionError / ECONNREFUSED` and invoked `process.exit(1)`. The container terminated with status 1 before Render could detect port binding or receive a response on `/health`.
+- **Resilient Lifecycle Architecture:**
+  1. `app.listen(env.PORT, '0.0.0.0')` binds to the port immediately, ensuring Render's port listener and `/health` probe receive prompt HTTP 200 responses (`status: healthy`, `database: connected/connecting/disconnected`).
+  2. Database connection initializes asynchronously with automated retry backoff rather than immediate process termination.
+  3. Catalogue auto-seeding (`Product.insertMany`) and sample account creation are wrapped in safe try/catch blocks to eliminate unhandled rejection crashes.
+
 ---
 
 ## 6. REST API Documentation
