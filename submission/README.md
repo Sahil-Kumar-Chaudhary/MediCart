@@ -4,6 +4,8 @@
 **Organization:** ALGIONS AI LABS PRIVATE LIMITED  
 **Project Title:** MediCart – Android Online Pharmacy Application & REST API  
 **Official Repository:** [https://github.com/Sahil-Kumar-Chaudhary/MediCart.git](https://github.com/Sahil-Kumar-Chaudhary/MediCart.git)  
+**Official GitHub Release:** [v2.4.0 Release Page & APK Downloads](https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/tag/v2.4.0)  
+**Direct Live APK Download:** [`MediCart-v2.4-live-debug.apk`](https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/download/v2.4.0/MediCart-v2.4-live-debug.apk)  
 **Main Branch:** `main`  
 **Verified On Hardware Device:** `CPH2333` (OPPO Reno7 5G, Android 13 / API Level 33)  
 **Live Public Backend:** [https://medicart-backend-lmcz.onrender.com/](https://medicart-backend-lmcz.onrender.com/)  

@@ -7,11 +7,14 @@
 ![Render](https://img.shields.io/badge/Render-Live%20Production-blue?style=flat&logo=render)
 ![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas%20M0-forestgreen?style=flat&logo=mongodb)
 ![Tests](https://img.shields.io/badge/Tests-88%2F88%20Passed%20(100%25)-success?style=flat)
+[![GitHub Release](https://img.shields.io/github/v/release/Sahil-Kumar-Chaudhary/MediCart?style=flat&label=Release&color=orange)](https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/tag/v2.4.0)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat)
 
 **Candidate / Author:** Sahil Kumar Chaudhary  
 **Organization / Evaluator:** ALGIONS AI LABS PRIVATE LIMITED  
 **Official Repository:** [https://github.com/Sahil-Kumar-Chaudhary/MediCart.git](https://github.com/Sahil-Kumar-Chaudhary/MediCart.git)  
+**Official GitHub Release:** [v2.4.0 Release Page & APK Downloads](https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/tag/v2.4.0)  
+**Direct Live APK Download:** [`MediCart-v2.4-live-debug.apk`](https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/download/v2.4.0/MediCart-v2.4-live-debug.apk)  
 **Live Public Backend:** [https://medicart-backend-lmcz.onrender.com/](https://medicart-backend-lmcz.onrender.com/)  
 **Live Backend Health Check:** [https://medicart-backend-lmcz.onrender.com/health](https://medicart-backend-lmcz.onrender.com/health)  
 **Database:** MongoDB Atlas Production Replica Set (`AWS ap-south-1` Mumbai)  
@@ -228,10 +231,13 @@ cd ..
 
 ## 9. Submission Package & GitHub Release
 
-All materials requested for internship assessment by **ALGIONS AI LABS PRIVATE LIMITED** are catalogued under [`submission/`](submission/):
+All materials requested for internship assessment by **ALGIONS AI LABS PRIVATE LIMITED** are catalogued under [`submission/`](submission/) and published in the [Official GitHub Release v2.4.0](https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/tag/v2.4.0):
 
-- 📦 **Live Release APK (16.6 MB):** [`submission/apk/MediCart-v2.4-live-debug.apk`](submission/apk/MediCart-v2.4-live-debug.apk)
-- 📦 **Standard Debug APK (16.6 MB):** [`submission/apk/MediCart-debug.apk`](submission/apk/MediCart-debug.apk)
+- 🚀 **GitHub Release Page:** [https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/tag/v2.4.0](https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/tag/v2.4.0)
+- 📦 **Download Live APK (Direct Link):** [`MediCart-v2.4-live-debug.apk`](https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/download/v2.4.0/MediCart-v2.4-live-debug.apk) (16.6 MB)
+- 📦 **Download Local Debug APK (Direct Link):** [`MediCart-debug.apk`](https://github.com/Sahil-Kumar-Chaudhary/MediCart/releases/download/v2.4.0/MediCart-debug.apk) (16.6 MB)
+- 📦 **Local Repository Live Release APK:** [`submission/apk/MediCart-v2.4-live-debug.apk`](submission/apk/MediCart-v2.4-live-debug.apk)
+- 📦 **Local Repository Standard Debug APK:** [`submission/apk/MediCart-debug.apk`](submission/apk/MediCart-debug.apk)
 - 🎬 **Demonstration Video (13.5 MB):** [`submission/demo/video/MediCart-Demonstration.mp4`](submission/demo/video/MediCart-Demonstration.mp4)
 - 💬 **Subtitles (SRT):** [`submission/demo/video/MediCart-Demonstration.srt`](submission/demo/video/MediCart-Demonstration.srt)
 - 📑 **Comprehensive Technical Report:** [`submission/reports/TECHNICAL_REPORT.md`](submission/reports/TECHNICAL_REPORT.md)
